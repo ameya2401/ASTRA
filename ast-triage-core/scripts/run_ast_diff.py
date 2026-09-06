@@ -86,6 +86,14 @@ def main() -> None:
     parser.add_argument("--base", "-b", type=str, help="Path to pre-PR (base) Python file")
     parser.add_argument("--head", "-H", type=str, help="Path to post-PR (head) Python file")
     parser.add_argument("--json", action="store_true", help="Output raw JSON results")
+    parser.add_argument(
+        "--save",
+        "-s",
+        nargs="?",
+        const="test_reports/ast_diff_report.json",
+        default=None,
+        help="Save test results locally (default: test_reports/ast_diff_report.json)",
+    )
 
     args = parser.parse_args()
 
@@ -113,10 +121,30 @@ def main() -> None:
     metrics = diff_single_file_ast(base_code, head_code)
 
     if args.json:
-        print(json.dumps(metrics, indent=2))
+        output_str = json.dumps(metrics, indent=2)
+        print(output_str)
     else:
-        print(format_table(metrics))
+        output_str = format_table(metrics)
+        print(output_str)
+
+    # Save report locally if requested
+    if args.save:
+        save_path = Path(args.save)
+        if not save_path.is_absolute():
+            save_path = BASE_DIR / save_path
+
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write JSON data
+        save_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+        print(f"\n[Saved Local Report (Ignored by Git)] -> {save_path}")
+
+        # Also write readable summary alongside
+        txt_path = save_path.with_suffix(".txt")
+        txt_path.write_text(format_table(metrics), encoding="utf-8")
+        print(f"[Saved Human-Readable Summary]     -> {txt_path}")
 
 
 if __name__ == "__main__":
     main()
+
