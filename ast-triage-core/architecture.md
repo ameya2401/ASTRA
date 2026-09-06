@@ -1,6 +1,6 @@
 # AST-Triage: Technical Architecture
 
-> **Last Updated:** Phase 2 — Tree-sitter AST Differencing Engine  
+> **Last Updated:** Phase 3 — Intent-to-Diff Semantic Alignment Engine  
 > **Date:** September 6, 2026
 
 ---
@@ -336,12 +336,84 @@ class ASTMetrics(TypedDict):
 
 ---
 
-## 8. Phase Implementation Roadmap
+## 8. Semantic Engine Architecture (Phase 3)
+
+### Module Design
+
+```
+src/semantic_engine/
+├── embedder.py       ─── Thread-safe singleton SentenceTransformer wrapper
+│                          SentenceEmbedder(model_name)
+│                          get_embedder()
+│                          encode(texts, normalize_embeddings=True)
+│                          get_embedding_dimension() -> 384
+│
+└── drift_analyzer.py ─── Semantic alignment & entity drift extraction (F13–F18)
+                           normalize_text(text)      [strips HTML, markdown tables, fences]
+                           normalize_diff(raw_diff)  [strips git diff headers & hunks]
+                           extract_code_identifiers(text) [snake_case, camelCase, backticks]
+                           compute_entity_jaccard_distance(issue_ents, diff_ents) -> float
+                           compute_docstring_code_ratio(raw_diff) -> float
+                           compute_issue_token_length(issue_text) -> int
+                           SemanticDriftAnalyzer:
+                             compute_alignment(issue, diff) -> (cosine_sim, drift_flag)
+                             analyze(issue, diff, title)    -> SemanticMetrics TypedDict
+                           compute_semantic_drift(issue, diff, title) -> SemanticMetrics
+```
+
+### Internal Data Flow
+
+```
+issue_description, raw_diff, issue_title
+       │
+       ├──→ normalize_text() / normalize_diff() ──→ Sanitized strings
+       │
+       ├──→ extract_code_identifiers()
+       │        ├──→ issue entities (snake_case + camelCase + backticks)
+       │        ├──→ diff entities  (snake_case + camelCase + backticks)
+       │        └──→ compute_entity_jaccard_distance() ──→ F15: entity_drift_jaccard
+       │
+       ├──→ compute_docstring_code_ratio() ──────────────→ F16: docstring_code_ratio
+       ├──→ compute_issue_token_length()   ──────────────→ F18: issue_token_length
+       │
+       └──→ SentenceEmbedder.encode([issue, diff, title], normalize_embeddings=True)
+                ├──→ L2-normalized 384-D dense embeddings (e_issue, e_diff, e_title)
+                ├──→ dot(e_issue, e_diff)  ──→ F13: intent_diff_cosine (S_align)
+                ├──→ dot(e_title, e_diff)  ──→ F14: title_diff_cosine
+                └──→ (F13 < 0.45 ? 1 : 0)   ──→ F17: semantic_drift_flag
+```
+
+### Key Mathematical Formulations
+
+| Metric | Code | Mathematical Formula | Range / Type |
+|--------|------|----------------------|--------------|
+| **Intent-to-Diff Cosine** | F13 | $S_{align} = \cos(\mathbf{e}_{issue}, \mathbf{e}_{diff}) = \mathbf{e}_{issue} \cdot \mathbf{e}_{diff}$ | `[-1.0, 1.0]` float |
+| **Title-to-Diff Cosine** | F14 | $S_{title} = \cos(\mathbf{e}_{title}, \mathbf{e}_{diff})$ | `[-1.0, 1.0]` float |
+| **Entity Jaccard Distance** | F15 | $D_{entity} = 1.0 - \frac{\|Entities_{issue} \cap Entities_{diff}\|}{\|Entities_{issue} \cup Entities_{diff}\| + \epsilon}$ | `[0.0, 1.0]` float |
+| **Docstring-to-Code Ratio**| F16 | $R_{doc} = \frac{\text{Lines of Docstring/Comment Added}}{\text{Lines of Executable Code Added} + \epsilon}$ | `[0.0, ∞)` float |
+| **Semantic Drift Flag** | F17 | $\mathbb{I}_{drift} = 1 \text{ if } F13 < 0.45 \text{ else } 0$ | `{0, 1}` int |
+| **Issue Token Length** | F18 | $N_{tokens} = \|Tokens(Issue)\|$ | `[0, ∞)` int |
+
+### SemanticMetrics TypedDict Contract
+
+```python
+class SemanticMetrics(TypedDict):
+    intent_diff_cosine: float    # F13
+    title_diff_cosine: float     # F14
+    entity_drift_jaccard: float  # F15
+    docstring_code_ratio: float  # F16
+    semantic_drift_flag: int     # F17
+    issue_token_length: int      # F18
+```
+
+---
+
+## 9. Phase Implementation Roadmap
 
 | Phase | Module | Status | Key Deliverables |
 |-------|--------|--------|------------------|
 | **1** | Scaffolding | ✅ DONE | requirements.txt, settings, DB models, directory structure |
 | **2** | AST Engine | ✅ DONE | parser.py, cyclomatic.py, differ.py (12 features), 38 tests |
-| **3** | Semantic Engine | ⬜ TODO | MiniLM embedder, cosine drift, entity Jaccard |
+| **3** | Semantic Engine | ✅ DONE | embedder.py, drift_analyzer.py (6 features), 34 tests |
 | **4** | ML Engine | ⬜ TODO | XGBoost trainer, Platt calibrator, SHAP explainer, vector builder |
 | **5** | API & Integration | ⬜ TODO | FastAPI endpoints, webhook handler, GitHub reporter |

@@ -1,6 +1,6 @@
 # AST-Triage: Project Context
 
-> **Last Updated:** Phase 2 — Tree-sitter AST Differencing Engine  
+> **Last Updated:** Phase 3 — Intent-to-Diff Semantic Alignment Engine  
 > **Date:** September 6, 2026
 
 ---
@@ -57,7 +57,25 @@ What was accomplished:
 - **Multi-file aggregation** via `diff_multi_file()` — sums integer metrics, averages float metrics
 - **38 unit tests** — all passing, covering parser, cyclomatic complexity, nesting depth, all 12 features, edge cases (empty/malformed code), and multi-file aggregation
 
-### ⬜ Phase 3: Semantic Alignment Engine — PENDING
+### ✅ Phase 3: Intent-to-Diff Semantic Alignment Engine — COMPLETE
+
+What was accomplished:
+- **`src/semantic_engine/embedder.py`** — Thread-safe singleton wrapper around `SentenceTransformer('all-MiniLM-L6-v2')`:
+  - Double-checked locking pattern with `threading.Lock`
+  - L2-normalized 384-dimensional dense vectors
+  - Batch encoding with mini-batch support and empty input sanitization
+  - `get_embedding_dimension()` and `reset_instance()` helper methods
+- **`src/semantic_engine/drift_analyzer.py`** — Full NLP feature extraction engine computing all 6 features (F13–F18):
+  - F13: `intent_diff_cosine` — Cosine similarity between issue prompt and code diff ($S_{align} \in [-1.0, 1.0]$)
+  - F14: `title_diff_cosine` — Secondary check comparing issue title to diff
+  - F15: `entity_drift_jaccard` — Jaccard distance over extracted code identifiers ($1 - \frac{|A \cap B|}{|A \cup B| + \epsilon}$)
+  - F16: `docstring_code_ratio` — Added docstring/comment lines vs added executable code lines
+  - F17: `semantic_drift_flag` — Binary alert flag ($1$ if $F13 < 0.45$, else $0$)
+  - F18: `issue_token_length` — Total token count in the issue prompt
+- **Text & Diff Normalization** — Strips HTML comments, HTML tags, markdown tables, markdown code block fences, and git unified diff headers (`diff --git`, `index`, `---`, `+++`, `@@`)
+- **Entity Extraction** — Targets `snake_case`, `camelCase` / `PascalCase`, backtick code tokens, and `def`/`class` names while filtering out Python keywords
+- **34 unit tests** in `tests/test_semantic_engine.py` (72 total tests across AST + Semantic engines) — all passing
+
 ### ⬜ Phase 4: Calibrated Classifier & SHAP Attribution — PENDING
 ### ⬜ Phase 5: FastAPI Webhook Gateway & GitHub Reporter — PENDING
 
