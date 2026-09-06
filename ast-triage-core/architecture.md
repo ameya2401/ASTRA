@@ -1,6 +1,6 @@
 # AST-Triage: Technical Architecture
 
-> **Last Updated:** Phase 1 — Project Scaffolding & Environment Setup  
+> **Last Updated:** Phase 2 — Tree-sitter AST Differencing Engine  
 > **Date:** September 6, 2026
 
 ---
@@ -265,12 +265,83 @@ async with session_factory() as session:
 
 ---
 
-## 7. Phase Implementation Roadmap
+## 7. AST Engine Architecture (Phase 2)
+
+### Module Design
+
+```
+src/ast_engine/
+├── parser.py       ─── Tree-sitter grammar init, node type constants
+│                        PY_LANGUAGE, _parser, CONTROL_FLOW_TYPES,
+│                        NESTING_TYPES, EXCEPTION_HANDLING_TYPES, CALL_TYPES
+│                        parse_code(), get_node_text()
+│
+├── cyclomatic.py   ─── Complexity calculators (depend on parser.py constants)
+│                        compute_cyclomatic_complexity()  [cursor-based, O(N)]
+│                        compute_max_nesting_depth()      [recursive, O(N)]
+│
+└── differ.py       ─── Full 12-feature comparison engine (depends on both above)
+                         diff_single_file_ast()  → ASTMetrics TypedDict
+                         diff_multi_file()       → Aggregated ASTMetrics
+```
+
+### Internal Data Flow
+
+```
+base_code, head_code
+       │
+       ▼
+   parse_code() ──→ Tree-sitter Tree (base_tree, head_tree)
+       │
+       ├──→ compute_cyclomatic_complexity() ──→ F04: delta_cc
+       ├──→ compute_max_nesting_depth()     ──→ F05: nesting_depth_delta
+       ├──→ _count_nodes()                  ──→ F01,F02,F09,F11 (volume metrics)
+       ├──→ _build_node_fingerprint_map()   ──→ F03: nodes_mutated
+       │        └──→ _count_mutations()
+       ├──→ _extract_function_signatures()  ──→ F06,F08 (sig + return types)
+       │        ├──→ _count_signature_changes()
+       │        └──→ _count_return_type_changes()
+       ├──→ _extract_class_info()           ──→ F07: classes_modified
+       │        └──→ _count_class_changes()
+       └──→ Composite formulas              ──→ F10,F12 (disturbance, churn ratio)
+```
+
+### Key Algorithms
+
+| Algorithm | Purpose | Complexity |
+|-----------|---------|------------|
+| Cursor-based traversal | Count nodes, CC, without stack allocation | O(N) |
+| Fingerprint mapping | Detect mutations (same type, different content) | O(N log N) |
+| Multiset difference | Count unmatched nodes per type | O(N) |
+| Signature extraction | Parse `function_definition` → params + return type | O(functions) |
+| Disturbance index | Weighted composite: 0.4·ΔCC + 0.3·NodeChurn + 0.3·SigBreak | O(1) |
+
+### ASTMetrics TypedDict Contract
+
+```python
+class ASTMetrics(TypedDict):
+    nodes_added: int              # F01
+    nodes_deleted: int            # F02
+    nodes_mutated: int            # F03
+    delta_cc: int                 # F04 (capped [-50, +50])
+    nesting_depth_delta: int      # F05
+    func_signatures_mod: int      # F06
+    classes_modified: int         # F07
+    return_types_altered: int     # F08
+    call_graph_fanout_delta: int  # F09
+    ast_disturbance_index: float  # F10 (normalized [0.0, 1.0])
+    try_catch_added: int          # F11
+    control_flow_churn_ratio: float  # F12 (normalized [0.0, 1.0])
+```
+
+---
+
+## 8. Phase Implementation Roadmap
 
 | Phase | Module | Status | Key Deliverables |
 |-------|--------|--------|------------------|
 | **1** | Scaffolding | ✅ DONE | requirements.txt, settings, DB models, directory structure |
-| **2** | AST Engine | ⬜ TODO | tree-sitter parser, cyclomatic calculator, structural differ |
+| **2** | AST Engine | ✅ DONE | parser.py, cyclomatic.py, differ.py (12 features), 38 tests |
 | **3** | Semantic Engine | ⬜ TODO | MiniLM embedder, cosine drift, entity Jaccard |
 | **4** | ML Engine | ⬜ TODO | XGBoost trainer, Platt calibrator, SHAP explainer, vector builder |
 | **5** | API & Integration | ⬜ TODO | FastAPI endpoints, webhook handler, GitHub reporter |

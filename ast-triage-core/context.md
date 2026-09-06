@@ -1,6 +1,6 @@
 # AST-Triage: Project Context
 
-> **Last Updated:** Phase 1 — Project Scaffolding & Environment Setup  
+> **Last Updated:** Phase 2 — Tree-sitter AST Differencing Engine  
 > **Date:** September 6, 2026
 
 ---
@@ -41,7 +41,22 @@ What was accomplished:
 - **Database Connection** — Async engine factory with SQLite support, session management, and table initialization
 - **Data & Model Directories** — `data/raw/`, `data/processed/`, `data/fixtures/`, `models/`
 
-### ⬜ Phase 2: Tree-sitter AST Differencing Engine — PENDING
+### ✅ Phase 2: Tree-sitter AST Differencing Engine — COMPLETE
+
+What was accomplished:
+- **`src/ast_engine/parser.py`** — Tree-sitter Python grammar wrapper with pre-configured parser, node type constants (control flow, nesting, exception handling, calls), and text extraction helpers
+- **`src/ast_engine/cyclomatic.py`** — McCabe Cyclomatic Complexity calculator (cursor-based, stack-free traversal) and maximum nesting depth calculator (recursive)
+- **`src/ast_engine/differ.py`** — Full structural AST comparison engine computing all 12 features:
+  - F01–F03: Node volume (added/deleted/mutated via fingerprint mapping)
+  - F04–F05: Complexity delta (capped ±50) and nesting depth delta
+  - F06–F08: Function signature changes, class modifications, return type alterations
+  - F09: Call graph fan-out delta (external function call count changes)
+  - F10: Composite AST disturbance index (normalized [0.0, 1.0])
+  - F11: Try/except block additions
+  - F12: Control flow churn ratio
+- **Multi-file aggregation** via `diff_multi_file()` — sums integer metrics, averages float metrics
+- **38 unit tests** — all passing, covering parser, cyclomatic complexity, nesting depth, all 12 features, edge cases (empty/malformed code), and multi-file aggregation
+
 ### ⬜ Phase 3: Semantic Alignment Engine — PENDING
 ### ⬜ Phase 4: Calibrated Classifier & SHAP Attribution — PENDING
 ### ⬜ Phase 5: FastAPI Webhook Gateway & GitHub Reporter — PENDING
