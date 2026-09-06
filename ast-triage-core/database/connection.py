@@ -16,6 +16,7 @@ Usage:
     async with get_async_session() as session:
         result = await session.execute(select(PullRequest))
 """
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from typing import AsyncGenerator
 
@@ -64,6 +65,7 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
     )
 
 
+@asynccontextmanager
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Async generator that yields an AsyncSession.
