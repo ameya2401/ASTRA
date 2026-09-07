@@ -37,7 +37,8 @@ ASTRA (AST-Triage & Automated Risk Stratification for AI-Agent-Authored Pull Req
 4. **Strict type hints and async discipline.** All core models use SQLAlchemy 2.0 mapped columns and Pydantic v2 schemas. Database sessions must use the `@asynccontextmanager` async session factory.
 5. **Thread-safe singleton resources.** Heavy models (like SentenceEmbedder) must be initialized once via singletons protected with thread locks; never reload neural models in request loops.
 6. **Error-tolerant AST parsing.** When processing PR diffs, use Tree-sitter's error-tolerant parser (`has_error` handling). Never allow a malformed syntax node from an agent PR to crash the triage service.
-
+7. **Mandatory knowledge base updates.** Whenever implementing any phase, feature, bugfix, or update inside the project, you must update the `knowledge_base/` folder with complete, accurate information, schemas, formulas, and code references.
+ 
 ## Verification gates
 
 | Gate | Command | What it proves |
@@ -67,6 +68,7 @@ ASTRA/
 ├── AGENTS.md                     # Agent conventions and verification ledger
 ├── README.md                     # Top-level workspace documentation
 ├── .gitignore                    # Git exclusions (secrets, models, DBs, test reports)
+├── knowledge_base/               # Karpathy-style knowledge base wiki (MOC & domain notes)
 ├── skills/                       # Project skills
 │   ├── unslop/SKILL.md           # Writing style: cut AI tells & puffery
 │   └── feynman/SKILL.md          # Plain-language explanation technique
