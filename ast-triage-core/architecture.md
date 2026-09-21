@@ -415,5 +415,5 @@ class SemanticMetrics(TypedDict):
 | **1** | Scaffolding | ✅ DONE | requirements.txt, settings, DB models, directory structure |
 | **2** | AST Engine | ✅ DONE | parser.py, cyclomatic.py, differ.py (12 features), 38 tests |
 | **3** | Semantic Engine | ✅ DONE | embedder.py, drift_analyzer.py (6 features), 34 tests |
-| **4** | ML Engine | ⬜ TODO | XGBoost trainer, Platt calibrator, SHAP explainer, vector builder |
+| **4** | ML Engine | ✅ DONE | XGBoost trainer, Platt calibrator, SHAP explainer, vector builder, 19 tests |
 | **5** | API & Integration | ⬜ TODO | FastAPI endpoints, webhook handler, GitHub reporter |

@@ -54,6 +54,8 @@ models/*.bin
 models/*.onnx
 models/*.safetensors
 models/*.ckpt
+models/*.joblib
+*.joblib
 models/checkpoint-*/
 
 # Unit test / coverage reports
@@ -87,3 +89,8 @@ local_reports/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local research & project notes
+astra_info/
+research_project.md
+research_simple.md
