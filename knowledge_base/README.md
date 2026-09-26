@@ -13,7 +13,8 @@ knowledge_base/
 ├── architecture/                   # System design, microservices, and database models
 │   ├── system_overview.md          # Component boundaries, runtime environment, and tech stack
 │   ├── data_flow.md                # Lifecycle of a PR from webhook ingress to comment post
-│   └── database_schema.md          # Relational entities, foreign keys, and vector storage
+│   ├── database_schema.md          # Relational entities, foreign keys, and vector storage
+│   └── api_gateway.md              # FastAPI REST endpoints, schemas, lifecycle, and SLA guarantees
 │
 ├── features/                       # 28-dimensional PR feature vector taxonomy
 │   ├── feature_taxonomy.md         # Master index of features F01 through F28
@@ -24,6 +25,7 @@ knowledge_base/
 ├── functionality/                  # Engine implementations and developer tooling
 │   ├── ast_engine_differ.md        # Tree-sitter AST parsing and disturbance index computation
 │   ├── semantic_drift_analyzer.md  # Sentence embeddings, cosine similarity, and entity Jaccard
+│   ├── github_webhook_and_reporter.md # Webhook HMAC verification, API client, and PR comments
 │   └── cli_and_runners.md          # Standalone CLI tools and local testing workflows
 │
 ├── ml_and_scoring/                 # Machine learning, calibration, and explainability

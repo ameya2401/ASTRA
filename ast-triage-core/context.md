@@ -1,7 +1,7 @@
 # AST-Triage: Project Context
 
-> **Last Updated:** Phase 4 - Calibrated Classifier & SHAP Attribution  
-> **Date:** September 20, 2026
+> **Last Updated:** Phase 5 - FastAPI Webhook Gateway & GitHub Reporter  
+> **Date:** September 21, 2026
 
 ---
 
@@ -80,7 +80,23 @@ What was accomplished:
 - **`scripts/train_model.py`**: Standalone training and verification CLI script
 - **19 unit tests**: all passing in `tests/test_feature_pipeline.py` (91 total tests passing across Phases 2, 3, and 4)
 
-### ⬜ Phase 5: FastAPI Webhook Gateway & GitHub Reporter - PENDING
+### ✅ Phase 5: FastAPI Webhook Gateway & GitHub Reporter - COMPLETE
+
+What was accomplished:
+- **`src/api/schemas.py`**:
+  - Pydantic v2 schemas for `PRWebhookPayload`, `SHAPExplanationItem`, `TriageResponse`, `TriageQueueItem`, `HealthResponse`, and `GitHubWebhookAck`
+- **`src/api/routes.py`**:
+  - Core triage analysis endpoint `POST /api/v1/triage/analyze` orchestrating AST structural extraction, semantic drift embedding, test metrics, 28-D vector assembly, XGBoost inference, and DB persistence under a 300ms SLA
+  - Maintainer review queue endpoint `GET /api/v1/triage/queue/{repo_name}` with priority sorting
+  - Native GitHub webhook ingestion `POST /api/v1/github/webhook` with HMAC-SHA256 signature verification
+  - System health check `GET /api/v1/health`
+- **`src/api/main.py`**:
+  - FastAPI application entrypoint with `@asynccontextmanager` lifespan handler for async database initialization and ML/NLP singleton pre-warming
+- **`src/integrations/reporter.py`**:
+  - GitHub PR markdown comment generator featuring SVG status badges (Green/Yellow/Red), calibrated risk percentages, collapsible SHAP feature driver breakdowns, and actionable maintainer recommendations
+- **`src/integrations/github_client.py`**:
+  - Non-blocking asynchronous HTTP client using `httpx` for PR diff retrieval, issue comments, and HMAC cryptographic signature verification
+- **10 unit tests**: all passing in `tests/test_end_to_end.py` (101 total unit and integration tests passing across all project phases)
 
 ---
 
