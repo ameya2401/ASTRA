@@ -5,7 +5,7 @@ Formats triage assessments into structured markdown comments containing
 SVG status badges, calibrated risk percentages, collapsible SHAP feature
 attributions, and actionable recommendations for code reviewers.
 """
-from typing import Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from src.api.schemas import TriageResponse
 
 
@@ -109,3 +109,35 @@ def generate_markdown_report(
     ])
 
     return "\n".join(lines)
+
+
+def format_risk_summary(triage: TriageResponse) -> Dict[str, Any]:
+    """
+    Constructs a lightweight structured summary dictionary from a TriageResponse.
+
+    Useful for notification dispatchers (e.g., Slack, Discord, webhook relays)
+    and quick programmatic inspection of triage outcomes.
+
+    Args:
+        triage: Evaluated TriageResponse instance.
+
+    Returns:
+        Structured dictionary containing essential triage fields and primary risk drivers.
+    """
+    tier = (triage.risk_tier or "MEDIUM").upper()
+    risk_percent = round(triage.risk_probability * 100.0, 1)
+    primary_drivers = [
+        item.feature_name for item in (triage.top_risk_drivers or [])
+    ]
+
+    return {
+        "pr_number": triage.pr_number,
+        "repo_name": triage.repo_name,
+        "risk_tier": tier,
+        "risk_percent": risk_percent,
+        "recommendation": triage.recommendation,
+        "primary_drivers": primary_drivers,
+        "override_applied": triage.override_applied,
+        "latency_ms": triage.latency_ms,
+    }
+

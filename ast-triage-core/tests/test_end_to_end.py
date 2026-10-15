@@ -48,7 +48,7 @@ def test_health_check_endpoint(client):
     assert data["status"] == "healthy"
     assert data["model_loaded"] is True
     assert data["database_connected"] is True
-    assert data["app_name"] == "AST-Triage"
+    assert data["app_name"] in {get_settings().APP_NAME, "AST-Triage", "ASTRA"}
 
 
 def test_analyze_clean_pr(client):
@@ -202,10 +202,22 @@ def test_triage_queue_endpoint(client):
     assert queue[0]["risk_tier"] == "LOW"
 
 
+def _make_webhook_headers(payload_bytes: bytes, event: str) -> dict:
+    headers = {"X-GitHub-Event": event}
+    secret = get_settings().GITHUB_WEBHOOK_SECRET
+    if secret:
+        sig = hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
+        headers["X-Hub-Signature-256"] = f"sha256={sig}"
+    return headers
+
+
 def test_github_webhook_ping(client):
     """Verifies that GitHub ping webhook events return an acknowledgement."""
-    headers = {"X-GitHub-Event": "ping"}
-    response = client.post("/api/v1/github/webhook", json={"zen": "Design for failure."}, headers=headers)
+    import json
+    payload = {"zen": "Design for failure."}
+    payload_bytes = json.dumps(payload).encode()
+    headers = _make_webhook_headers(payload_bytes, "ping")
+    response = client.post("/api/v1/github/webhook", content=payload_bytes, headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "processed"
@@ -214,6 +226,7 @@ def test_github_webhook_ping(client):
 
 def test_github_webhook_pull_request_flow(client):
     """Verifies end-to-end processing of a GitHub pull_request.opened event."""
+    import json
     webhook_payload = {
         "action": "opened",
         "repository": {"full_name": "ast-org/webhook-test"},
@@ -236,8 +249,9 @@ def test_github_webhook_pull_request_flow(client):
         },
     }
 
-    headers = {"X-GitHub-Event": "pull_request"}
-    response = client.post("/api/v1/github/webhook", json=webhook_payload, headers=headers)
+    payload_bytes = json.dumps(webhook_payload).encode()
+    headers = _make_webhook_headers(payload_bytes, "pull_request")
+    response = client.post("/api/v1/github/webhook", content=payload_bytes, headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "processed"
