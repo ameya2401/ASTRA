@@ -202,6 +202,26 @@ def test_triage_queue_endpoint(client):
     assert queue[0]["risk_tier"] == "LOW"
 
 
+def test_get_pr_triage_status_endpoint(client):
+    """Verifies retrieval of persisted triage status for a specific PR."""
+    repo = "ast-org/calculator"
+    response = client.get(f"/api/v1/triage/status/{repo}/101")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["repo_name"] == repo
+    assert data["pr_number"] == 101
+    assert data["risk_tier"] == "LOW"
+    assert "risk_probability" in data
+    assert "top_drivers" in data
+
+
+def test_get_pr_triage_status_not_found(client):
+    """Verifies 404 response for non-existent PR triage status."""
+    response = client.get("/api/v1/triage/status/nonexistent/repo/9999")
+    assert response.status_code == 404
+
+
+
 def _make_webhook_headers(payload_bytes: bytes, event: str) -> dict:
     headers = {"X-GitHub-Event": event}
     secret = get_settings().GITHUB_WEBHOOK_SECRET

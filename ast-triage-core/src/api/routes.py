@@ -411,6 +411,47 @@ async def get_triage_queue(
     return queue_items
 
 
+@router.get("/triage/status/{repo_name:path}/{pr_number}", response_model=Dict[str, Any])
+async def get_pr_triage_status(
+    repo_name: str,
+    pr_number: int,
+    session: AsyncSession = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Retrieves the persisted triage assessment and feature attribution for a specific pull request.
+    """
+    stmt = (
+        select(PullRequest, TriagePrediction)
+        .join(Repository, PullRequest.repo_id == Repository.id)
+        .outerjoin(TriagePrediction, PullRequest.id == TriagePrediction.pr_id)
+        .where(Repository.repo_name == repo_name, PullRequest.pr_number == pr_number)
+    )
+    result = await session.execute(stmt)
+    row = result.first()
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Triage record for {repo_name} #{pr_number} not found",
+        )
+
+    pr, pred = row
+    return {
+        "repo_name": repo_name,
+        "pr_number": pr_number,
+        "title": pr.title,
+        "author_login": pr.author_login,
+        "risk_tier": pred.risk_tier if pred else "UNKNOWN",
+        "risk_probability": round(float(pred.calibrated_risk_score), 4) if pred else None,
+        "top_drivers": [
+            {"feature": pred.top_shap_feature_1, "shap_value": pred.shap_value_1},
+            {"feature": pred.top_shap_feature_2, "shap_value": pred.shap_value_2},
+            {"feature": pred.top_shap_feature_3, "shap_value": pred.shap_value_3},
+        ] if pred else [],
+        "ci_passed": pr.ci_passed,
+        "analyzed_at": pred.created_at.isoformat() if pred and pred.created_at else None,
+    }
+
+
 @router.post("/github/webhook", response_model=GitHubWebhookAck)
 async def github_webhook_endpoint(
     request: Request,
