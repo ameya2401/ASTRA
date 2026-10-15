@@ -23,6 +23,8 @@ In software repositories, defective pull requests are a minority (around 20% def
 
 - **Weighting Strategy**: Set XGBoost `scale_pos_weight = (len(y) - sum(y)) / sum(y)` during initial tree construction.
 - **Stratified Folds**: Training splits use `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)` to maintain label distributions across folds.
+- **Realistic AST Node Scaling**: Tree-sitter AST nodes represent full syntax trees where even a 10-line helper adds 150+ nodes. The training data distributions model realistic AST node ranges (25 to 600 nodes) for both clean and defective PRs. This ensures the model learns true structural risk indicators (cyclomatic spikes, nesting depth, assertion deletions, and test ratios) rather than penalizing normal code volume.
+- **Title Fallback for Unspecified Descriptions**: When authors omit PR descriptions, the semantic analyzer falls back to the PR title. This prevents false positive semantic drift penalties for routine or concisely titled pull requests.
 - **Evaluation Metrics**: Models are evaluated using:
   - **Brier Score**: Measures probability calibration quality (lower is better, goal < 0.12).
   - **AUC-ROC**: Measures ranking discrimination across thresholds (goal > 0.85).
