@@ -25,6 +25,7 @@ from src.api.schemas import (
     SHAPExplanationItem,
     TriageQueueItem,
     TriageResponse,
+    TriageStatsResponse,
 )
 from src.ast_engine.differ import ASTMetrics, diff_multi_file
 from src.feature_pipeline.normalizer import clip_feature_bounds, impute_missing_values
@@ -409,6 +410,59 @@ async def get_triage_queue(
         )
 
     return queue_items
+
+
+@router.get("/triage/stats", response_model=TriageStatsResponse)
+@router.get("/triage/stats/{repo_name:path}", response_model=TriageStatsResponse)
+async def get_triage_stats(
+    repo_name: Optional[str] = None,
+    session: AsyncSession = Depends(get_db),
+) -> TriageStatsResponse:
+    """
+    Computes aggregated triage performance and risk stratification analytics.
+
+    Optionally filters by repository name. Returns total PR count, risk tier
+    breakdown, mean calibrated risk probability, and bot authorship ratio.
+    """
+    stmt = (
+        select(PullRequest, TriagePrediction)
+        .join(Repository, PullRequest.repo_id == Repository.id)
+        .outerjoin(TriagePrediction, PullRequest.id == TriagePrediction.pr_id)
+    )
+    if repo_name:
+        stmt = stmt.where(Repository.repo_name == repo_name)
+
+    result = await session.execute(stmt)
+    rows = result.all()
+
+    total_evaluated = len(rows)
+    tier_counts = {"LOW": 0, "MEDIUM": 0, "HIGH": 0}
+    probabilities = []
+    latencies = []
+    bot_count = 0
+
+    for pr, pred in rows:
+        if pr.author_is_bot:
+            bot_count += 1
+        if pred:
+            tier = pred.risk_tier or "MEDIUM"
+            tier_counts[tier] = tier_counts.get(tier, 0) + 1
+            if pred.calibrated_risk_score is not None:
+                probabilities.append(float(pred.calibrated_risk_score))
+            if pred.inference_latency_ms is not None:
+                latencies.append(float(pred.inference_latency_ms))
+
+    avg_prob = round(sum(probabilities) / len(probabilities), 4) if probabilities else 0.0
+    avg_latency = round(sum(latencies) / len(latencies), 2) if latencies else 0.0
+
+    return TriageStatsResponse(
+        repo_name=repo_name,
+        total_evaluated=total_evaluated,
+        risk_tiers=tier_counts,
+        average_risk_probability=avg_prob,
+        average_latency_ms=avg_latency,
+        bot_author_count=bot_count,
+    )
 
 
 @router.post("/github/webhook", response_model=GitHubWebhookAck)
