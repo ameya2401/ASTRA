@@ -14,24 +14,40 @@ Deploying ASTRA to a cloud host replaces local port tunnels (ngrok, smee) with a
 
 ---
 
-## 2. Platform Options
+## 2. Memory Optimization for Free Tiers (<= 512MB RAM)
 
-### 2.1 Option A: Render (Recommended, Free Tier Available)
+By default, installing `sentence-transformers` downloads full GPU PyTorch with 15+ NVIDIA CUDA packages (consuming >2.5GB disk and >450MB idle RAM upon import). On Render's 512MB free tier, this causes an instant `Out of memory (used over 512Mi)` crash.
+
+To keep memory usage under 200MB:
+1. **CPU-only PyTorch:** `pip install torch --index-url https://download.pytorch.org/whl/cpu`
+2. **Single-threaded inference:**
+   - `OMP_NUM_THREADS=1`
+   - `MKL_NUM_THREADS=1`
+   - `TORCH_NUM_THREADS=1`
+
+---
+
+## 3. Platform Options
+
+### 3.1 Option A: Render (Free Tier Supported)
 
 - **Runtime:** Docker (`ast-triage-core/Dockerfile`)
 - **Health Check Endpoint:** `/api/v1/health`
 - **Environment Variables:**
   - `GITHUB_TOKEN`: GitHub Personal Access Token or App installation token with `pull_requests:write` and `issues:write`.
   - `GITHUB_WEBHOOK_SECRET`: HMAC-SHA256 secret key matching GitHub webhook configuration.
+  - `OMP_NUM_THREADS`: `1`
+  - `MKL_NUM_THREADS`: `1`
+  - `TORCH_NUM_THREADS`: `1`
 - **Port:** Render automatically sets `$PORT`; the Dockerfile dynamically binds to `${PORT:-8000}`.
 
-### 2.2 Option B: Railway
+### 3.2 Option B: Railway
 
 - Connect GitHub repository `ameya2401/ASTRA`.
 - Set Root Directory to `/ast-triage-core`.
 - Railway automatically detects the Dockerfile, generates a public `.up.railway.app` domain, and provisions SSL.
 
-### 2.3 Option C: Self-Hosted Docker / VPS (AWS, DigitalOcean, Hetzner)
+### 3.3 Option C: Self-Hosted Docker / VPS (AWS, DigitalOcean, Hetzner)
 
 ```bash
 cd ast-triage-core
@@ -41,7 +57,7 @@ docker run -d -p 8000:8000 --env-file .env --name astra astra-triage
 
 ---
 
-## 3. Webhook Target Configuration
+## 4. Webhook Target Configuration
 
 Once deployed, configure the webhook in the target GitHub repository:
 - **Payload URL:** `https://<deployed-domain>/api/v1/github/webhook`
