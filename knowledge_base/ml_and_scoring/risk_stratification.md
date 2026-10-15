@@ -31,7 +31,7 @@ ASTRA maps the calibrated defect probability $P(\text{Defect} \mid X) \in [0.0, 
 Certain features represent critical failures that immediately elevate a PR to the **HIGH** tier regardless of the baseline calibrated score:
 
 1. **Semantic Drift Override**:
-   If `f17_semantic_drift_flag == 1` (i.e. `f13_intent_diff_cosine < 0.45`), the PR is forced to **HIGH**. An agent that solved the wrong issue must not be merged.
+   If `f17_semantic_drift_flag == 1` (i.e. `f13_intent_diff_cosine < 0.45`), the PR is elevated to **HIGH**. If an author leaves the issue description empty, the engine automatically falls back to the PR title, preventing false positive overrides for routine pull requests.
 2. **Assertion Deletion Anomaly**:
    If `f21_test_assertions_deleted > 5` and `f20_test_ast_nodes_added == 0`, the PR is flagged for suspicious assertion suppression and forced to **HIGH**.
 3. **Severe Disturbance with Failing CI**:

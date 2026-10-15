@@ -197,84 +197,86 @@ def generate_synthetic_pr_dataset(
     # Populate clean samples (first n_clean rows)
     for i in range(n_clean):
         # AST Structural (F01 - F12)
-        X[i, 0] = rng.poisson(lam=25)                # nodes_added
-        X[i, 1] = rng.poisson(lam=10)                # nodes_deleted
-        X[i, 2] = rng.poisson(lam=8)                 # nodes_mutated
-        X[i, 3] = rng.choice([-1, 0, 1, 2])          # delta_cc
-        X[i, 4] = rng.choice([0, 1])                 # nesting_depth_delta
-        X[i, 5] = rng.binomial(n=2, p=0.2)           # func_signatures_mod
-        X[i, 6] = rng.binomial(n=1, p=0.1)           # classes_modified
-        X[i, 7] = 0.0                                # return_types_altered
-        X[i, 8] = rng.choice([0, 1])                 # call_graph_fanout_delta
-        X[i, 9] = rng.uniform(0.05, 0.35)            # ast_disturbance_index
-        X[i, 10] = rng.binomial(n=1, p=0.1)          # try_catch_added
-        X[i, 11] = rng.uniform(0.02, 0.20)           # control_flow_churn
+        # Tree-sitter AST nodes range widely across clean PRs (single helper to full feature)
+        X[i, 0] = rng.randint(25, 450)                # nodes_added
+        X[i, 1] = rng.randint(0, 120)                 # nodes_deleted
+        X[i, 2] = rng.randint(0, 80)                  # nodes_mutated
+        X[i, 3] = rng.choice([-2, -1, 0, 1, 2])       # delta_cc
+        X[i, 4] = rng.choice([0, 1])                  # nesting_depth_delta
+        X[i, 5] = rng.choice([0, 1, 2])               # func_signatures_mod
+        X[i, 6] = rng.choice([0, 1])                  # classes_modified
+        X[i, 7] = 0.0                                 # return_types_altered
+        X[i, 8] = rng.randint(0, 8)                   # call_graph_fanout_delta
+        X[i, 9] = rng.uniform(0.05, 0.40)             # ast_disturbance_index
+        X[i, 10] = rng.choice([0, 1])                 # try_catch_added
+        X[i, 11] = rng.uniform(0.01, 0.20)            # control_flow_churn
 
         # Semantic Drift (F13 - F18)
-        X[i, 12] = rng.uniform(0.65, 0.95)           # intent_diff_cosine
-        X[i, 13] = rng.uniform(0.60, 0.90)           # title_diff_cosine
-        X[i, 14] = rng.uniform(0.10, 0.40)           # entity_drift_jaccard
-        X[i, 15] = rng.uniform(0.05, 0.30)           # docstring_code_ratio
-        X[i, 16] = 0.0                               # semantic_drift_flag
-        X[i, 17] = rng.randint(40, 200)              # issue_token_length
+        X[i, 12] = rng.uniform(0.55, 0.95)            # intent_diff_cosine
+        X[i, 13] = rng.uniform(0.50, 0.90)            # title_diff_cosine
+        X[i, 14] = rng.uniform(0.10, 0.85)            # entity_drift_jaccard
+        X[i, 15] = rng.uniform(0.10, 1.20)            # docstring_code_ratio
+        X[i, 16] = 0.0                                # semantic_drift_flag
+        X[i, 17] = rng.randint(5, 250)                # issue_token_length
 
         # Test Churn (F19 - F23)
-        X[i, 18] = rng.randint(1, 4)                 # test_files_modified
-        X[i, 19] = rng.randint(15, 60)               # test_ast_nodes_added
-        X[i, 20] = 0.0                               # assertions_deleted
-        X[i, 21] = rng.uniform(0.70, 1.40)           # test_to_logic_ratio
-        X[i, 22] = rng.binomial(n=2, p=0.1)          # mock_patch_count_delta
+        X[i, 18] = rng.randint(1, 4)                  # test_files_modified
+        X[i, 19] = rng.randint(25, 250)               # test_ast_nodes_added
+        X[i, 20] = 0.0                                # assertions_deleted
+        X[i, 21] = rng.uniform(0.30, 1.40)            # test_to_logic_ratio
+        X[i, 22] = rng.choice([0, 1])                 # mock_patch_count_delta
 
         # Process (F24 - F28)
-        X[i, 23] = rng.randint(1, 4)                 # commit_count
-        X[i, 24] = rng.randint(1, 3)                 # files_touched_count
-        X[i, 25] = rng.uniform(0.0, 1.2)             # dispersion_entropy
-        X[i, 26] = 1.0                               # ci_pass_flag
-        X[i, 27] = rng.binomial(n=1, p=0.4)          # is_known_agent_bot
+        X[i, 23] = rng.randint(1, 4)                  # commit_count
+        X[i, 24] = rng.randint(1, 4)                  # files_touched_count
+        X[i, 25] = rng.uniform(0.0, 1.0)              # dispersion_entropy
+        X[i, 26] = 1.0                                # ci_pass_flag
+        X[i, 27] = rng.choice([0.0, 1.0])             # is_known_agent_bot
 
     # Populate defective samples (last n_defects rows)
     for i in range(n_clean, n_samples):
         # AST Structural (F01 - F12)
-        X[i, 0] = rng.poisson(lam=120)               # nodes_added
-        X[i, 1] = rng.poisson(lam=60)                # nodes_deleted
-        X[i, 2] = rng.poisson(lam=45)                # nodes_mutated
-        X[i, 3] = rng.randint(6, 25)                 # delta_cc
-        X[i, 4] = rng.randint(3, 8)                  # nesting_depth_delta
-        X[i, 5] = rng.randint(2, 6)                  # func_signatures_mod
-        X[i, 6] = rng.randint(1, 4)                  # classes_modified
-        X[i, 7] = rng.randint(1, 3)                  # return_types_altered
-        X[i, 8] = rng.randint(3, 9)                  # call_graph_fanout_delta
-        X[i, 9] = rng.uniform(0.60, 0.95)            # ast_disturbance_index
-        X[i, 10] = rng.randint(2, 7)                 # try_catch_added
-        X[i, 11] = rng.uniform(0.40, 0.85)           # control_flow_churn
+        # Defective samples also exhibit varied node churn but with destructive characteristics
+        X[i, 0] = rng.randint(30, 600)                # nodes_added
+        X[i, 1] = rng.randint(10, 200)                # nodes_deleted
+        X[i, 2] = rng.randint(15, 120)                # nodes_mutated
+        X[i, 3] = rng.randint(7, 25)                  # delta_cc
+        X[i, 4] = rng.randint(3, 8)                   # nesting_depth_delta
+        X[i, 5] = rng.randint(2, 6)                   # func_signatures_mod
+        X[i, 6] = rng.randint(1, 4)                   # classes_modified
+        X[i, 7] = float(rng.randint(1, 4))            # return_types_altered
+        X[i, 8] = rng.randint(4, 12)                  # call_graph_fanout_delta
+        X[i, 9] = rng.uniform(0.60, 0.98)             # ast_disturbance_index
+        X[i, 10] = rng.randint(2, 8)                  # try_catch_added
+        X[i, 11] = rng.uniform(0.35, 0.90)            # control_flow_churn
 
         # Semantic Drift (F13 - F18)
-        is_drifted = rng.binomial(n=1, p=0.7)
+        is_drifted = rng.binomial(n=1, p=0.6)
         if is_drifted:
-            X[i, 12] = rng.uniform(0.10, 0.42)       # intent_diff_cosine
-            X[i, 13] = rng.uniform(0.10, 0.40)       # title_diff_cosine
-            X[i, 16] = 1.0                           # semantic_drift_flag
+            X[i, 12] = rng.uniform(0.10, 0.40)        # intent_diff_cosine
+            X[i, 13] = rng.uniform(0.10, 0.40)        # title_diff_cosine
+            X[i, 16] = 1.0                            # semantic_drift_flag
         else:
-            X[i, 12] = rng.uniform(0.48, 0.65)
-            X[i, 13] = rng.uniform(0.45, 0.60)
+            X[i, 12] = rng.uniform(0.42, 0.58)
+            X[i, 13] = rng.uniform(0.40, 0.55)
             X[i, 16] = 0.0
 
-        X[i, 14] = rng.uniform(0.55, 0.90)           # entity_drift_jaccard
-        X[i, 15] = rng.uniform(0.0, 0.05)            # docstring_code_ratio
-        X[i, 17] = rng.randint(10, 50)               # issue_token_length
+        X[i, 14] = rng.uniform(0.60, 0.95)            # entity_drift_jaccard
+        X[i, 15] = rng.uniform(0.0, 0.08)             # docstring_code_ratio
+        X[i, 17] = rng.randint(5, 150)                # issue_token_length
 
         # Test Churn (F19 - F23)
-        X[i, 18] = rng.choice([0, 1])                # test_files_modified
-        X[i, 19] = rng.choice([0, 5])                # test_ast_nodes_added
-        X[i, 20] = float(rng.randint(2, 9))          # assertions_deleted
-        X[i, 21] = rng.uniform(0.0, 0.15)            # test_to_logic_ratio
-        X[i, 22] = float(rng.randint(3, 8))          # mock_patch_count_delta
+        X[i, 18] = rng.choice([0, 1])                 # test_files_modified
+        X[i, 19] = float(rng.choice([0, 5, 10]))      # test_ast_nodes_added
+        X[i, 20] = float(rng.randint(3, 12))          # assertions_deleted
+        X[i, 21] = rng.uniform(0.0, 0.12)             # test_to_logic_ratio
+        X[i, 22] = float(rng.randint(3, 8))           # mock_patch_count_delta
 
         # Process (F24 - F28)
-        X[i, 23] = rng.randint(5, 15)                # commit_count
-        X[i, 24] = rng.randint(6, 18)                # files_touched_count
-        X[i, 25] = rng.uniform(2.0, 3.8)             # dispersion_entropy
-        X[i, 26] = float(rng.choice([0, 1], p=[0.7, 0.3])) # ci_pass_flag
-        X[i, 27] = 1.0                               # is_known_agent_bot
+        X[i, 23] = rng.randint(4, 15)                 # commit_count
+        X[i, 24] = rng.randint(5, 18)                 # files_touched_count
+        X[i, 25] = rng.uniform(1.8, 3.8)              # dispersion_entropy
+        X[i, 26] = float(rng.choice([0, 1], p=[0.75, 0.25])) # ci_pass_flag
+        X[i, 27] = 1.0                                # is_known_agent_bot
 
     return X, y

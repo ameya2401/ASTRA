@@ -356,18 +356,23 @@ class SemanticDriftAnalyzer:
         Returns:
             SemanticMetrics: Strongly typed dictionary containing F13–F18.
         """
-        norm_issue = normalize_text(issue_description)
         norm_diff = normalize_diff(raw_diff)
         norm_title = normalize_text(issue_title)
+        norm_issue = normalize_text(issue_description)
+
+        # Fall back to title when description is absent
+        if not norm_issue and norm_title:
+            norm_issue = norm_title
 
         # F18: Issue token length
-        f18_token_len = compute_issue_token_length(issue_description)
+        f18_token_len = compute_issue_token_length(issue_description if issue_description.strip() else issue_title)
 
         # F16: Docstring to code ratio
         f16_doc_ratio = compute_docstring_code_ratio(raw_diff)
 
         # F15: Entity drift Jaccard distance
-        issue_entities = extract_code_identifiers(issue_description + " " + issue_title)
+        combined_text = (issue_description + " " + issue_title).strip()
+        issue_entities = extract_code_identifiers(combined_text)
         diff_entities = extract_code_identifiers(raw_diff)
         f15_entity_drift = compute_entity_jaccard_distance(issue_entities, diff_entities)
 
@@ -387,8 +392,8 @@ class SemanticDriftAnalyzer:
 
         # Embed texts in a single mini-batch: [issue, diff, title (optional)]
         texts_to_embed = [norm_issue, norm_diff]
-        has_title = bool(norm_title)
-        if has_title:
+        has_distinct_title = bool(norm_title) and norm_title != norm_issue
+        if has_distinct_title:
             texts_to_embed.append(norm_title)
 
         embeddings = self.embedder.encode(texts_to_embed, normalize_embeddings=True)
@@ -403,12 +408,12 @@ class SemanticDriftAnalyzer:
         f17_drift_flag = 1 if f13_cosine < SEMANTIC_DRIFT_THRESHOLD else 0
 
         # F14: Title-diff cosine similarity
-        if has_title:
+        if has_distinct_title:
             e_title = embeddings[2]
             f14_title_sim = float(np.dot(e_title, e_diff))
             f14_title_sim = float(np.clip(round(f14_title_sim, 4), -1.0, 1.0))
         else:
-            # Fall back to intent cosine if title not provided
+            # Fall back to intent cosine if title not provided or matched issue
             f14_title_sim = f13_cosine
 
         return {

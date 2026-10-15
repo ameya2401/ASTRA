@@ -420,14 +420,22 @@ def diff_single_file_ast(base_code: str, head_code: str) -> ASTMetrics:
 
     # ── F10: AST Disturbance Index ──
     # D_AST = 0.4 * |ΔCC|/max(1,CC_base) + 0.3 * NodesChanged/N_total + 0.3 * I_sig_break
-    sig_break = 1 if func_signatures_mod > 0 else 0
+    # Isolated breaking signature changes (mutating or deleting existing signatures)
+    breaking_sigs = 0
+    for name, base_info in base_sigs.items():
+        if name not in head_sigs or base_info.get("params") != head_sigs[name].get("params"):
+            breaking_sigs += 1
+    sig_break = 1 if (breaking_sigs > 0 or return_types_altered > 0) else 0
+
     nodes_changed = nodes_added + nodes_deleted + nodes_mutated
+    # In diff hunks, normalize against total nodes in context + change (minimum 100) to prevent ratio explosion
+    effective_total = max(100.0, float(base_counts["total"] + head_counts["total"]))
     ast_disturbance = (
         0.4 * (abs(delta_cc) / max(1, cc_base))
-        + 0.3 * (nodes_changed / max(1, base_counts["total"]))
+        + 0.3 * (nodes_changed / effective_total)
         + 0.3 * sig_break
     )
-    ast_disturbance_index = min(1.0, round(ast_disturbance, 4))
+    ast_disturbance_index = min(1.0, max(0.0, round(ast_disturbance, 4)))
 
     return ASTMetrics(
         nodes_added=nodes_added,
