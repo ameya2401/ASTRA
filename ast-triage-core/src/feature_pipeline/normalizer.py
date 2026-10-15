@@ -148,3 +148,24 @@ class FeatureNormalizer:
     def fit_transform(self, X: np.ndarray) -> np.ndarray:
         """Fits and transforms in a single call."""
         return self.fit(X).transform(X)
+
+
+def safe_ratio_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
+    """
+    Safely computes the ratio of two numbers, guarding against ZeroDivisionError.
+
+    Used across the feature pipeline to calculate churn ratios and test proportions
+    without risking floating-point divide-by-zero exceptions.
+
+    Args:
+        numerator: Dividend value.
+        denominator: Divisor value.
+        default: Fallback return value when denominator is zero.
+
+    Returns:
+        Computed quotient float or default if denominator is zero.
+    """
+    if denominator == 0.0:
+        return default
+    return float(numerator / denominator)
+

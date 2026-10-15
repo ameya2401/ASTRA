@@ -399,3 +399,15 @@ def test_risk_predictor_invalid_dimension():
         invalid_vec = np.zeros((1, 15), dtype=np.float32)
         with pytest.raises(ValueError, match="Expected 28 features"):
             predictor.predict(invalid_vec)
+
+
+def test_safe_ratio_divide():
+    """Verifies that safe_ratio_divide handles regular and zero-denominator operations."""
+    from src.feature_pipeline.normalizer import safe_ratio_divide
+
+    assert safe_ratio_divide(10.0, 2.0) == 5.0
+    assert safe_ratio_divide(0.0, 5.0) == 0.0
+    assert safe_ratio_divide(10.0, 0.0) == 0.0
+    assert safe_ratio_divide(10.0, 0.0, default=-1.0) == -1.0
+    assert safe_ratio_divide(15.5, 2.0) == 7.75
+
