@@ -25,6 +25,7 @@ from src.api.schemas import (
     SHAPExplanationItem,
     TriageQueueItem,
     TriageResponse,
+    TriageStatsResponse,
 )
 from src.ast_engine.differ import ASTMetrics, diff_multi_file
 from src.feature_pipeline.normalizer import clip_feature_bounds, impute_missing_values
@@ -515,12 +516,16 @@ async def github_webhook_endpoint(
     author = pr_data.get("user", {})
     author_login = author.get("login", "")
     author_is_bot = author.get("type") == "Bot"
+    pr_title = pr_data.get("title", "Untitled PR")
+    pr_body = pr_data.get("body") or ""
+    # If author left PR description blank, fall back to PR title to avoid false positive semantic drift
+    effective_description = pr_body.strip() if pr_body.strip() else pr_title
 
     triage_payload = PRWebhookPayload(
         repo_name=repo_name,
         pr_number=pr_number,
-        title=pr_data.get("title", "Untitled PR"),
-        issue_description=pr_data.get("body") or "",
+        title=pr_title,
+        issue_description=effective_description,
         author_login=author_login,
         author_is_bot=author_is_bot,
         agent_framework="github-agent",

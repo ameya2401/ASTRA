@@ -120,3 +120,18 @@ class GitHubWebhookAck(BaseModel):
         default=None,
         description="Abbreviated triage result if evaluation ran",
     )
+
+
+class TriageStatsResponse(BaseModel):
+    """
+    Aggregated triage statistics across all evaluated pull requests.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    repo_name: Optional[str] = Field(default=None, description="Repository filter if specified")
+    total_evaluated: int = Field(default=0, description="Total number of PRs triaged")
+    risk_tiers: Dict[str, int] = Field(default_factory=dict, description="Count of PRs per risk tier")
+    average_risk_probability: float = Field(default=0.0, description="Mean calibrated risk probability")
+    average_latency_ms: float = Field(default=0.0, description="Mean triage latency in milliseconds")
+    bot_author_count: int = Field(default=0, description="Count of PRs authored by agent bots")
+
