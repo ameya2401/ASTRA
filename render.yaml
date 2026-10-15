@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: astra-triage-core
+    runtime: docker
+    dockerfilePath: ./ast-triage-core/Dockerfile
+    dockerContext: ./ast-triage-core
+    plan: free
+    region: oregon
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_WEBHOOK_SECRET
+        sync: false
+      - key: DEBUG
+        value: "false"
