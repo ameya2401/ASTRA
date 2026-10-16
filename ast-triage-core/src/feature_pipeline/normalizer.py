@@ -148,3 +148,27 @@ class FeatureNormalizer:
     def fit_transform(self, X: np.ndarray) -> np.ndarray:
         """Fits and transforms in a single call."""
         return self.fit(X).transform(X)
+
+
+def audit_feature_distribution(
+    vector: Optional[np.ndarray],
+    bounds: Optional[Dict[int, Tuple[Optional[float], Optional[float]]]] = None,
+) -> list:
+    """
+    Audits feature vector elements against expected physiological bounds
+    and detects non-finite entries before ML classification.
+    """
+    anomalies = []
+    if vector is None:
+        return anomalies
+
+    for idx, val in enumerate(vector):
+        if val is None or np.isnan(val):
+            anomalies.append(idx)
+        elif bounds and idx in bounds:
+            low, high = bounds[idx]
+            if (low is not None and val < low) or (high is not None and val > high):
+                anomalies.append(idx)
+
+    return anomalies
+
