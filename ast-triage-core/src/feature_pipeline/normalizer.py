@@ -58,6 +58,9 @@ def impute_missing_values(
     pos_inf_mask = np.isposinf(X_clean)
     neg_inf_mask = np.isneginf(X_clean)
 
+    if strategy not in ("constant", "mean", "zero"):
+        raise ValueError(f"Unsupported strategy '{strategy}'. Choose from: constant, mean, zero.")
+
     if strategy == "constant":
         X_clean[nan_mask] = fill_value
     elif strategy == "mean":
