@@ -399,3 +399,26 @@ def test_risk_predictor_invalid_dimension():
         invalid_vec = np.zeros((1, 15), dtype=np.float32)
         with pytest.raises(ValueError, match="Expected 28 features"):
             predictor.predict(invalid_vec)
+
+
+def test_clip_feature_bounds_with_custom_bounds_and_telemetry():
+    vec = np.zeros((1, 28), dtype=np.float32)
+    vec[0, 3] = 120.0  # default bound is [-50, 50]
+    vec[0, 9] = 1.8    # default bound is [0.0, 1.0]
+
+    # Standard clipping
+    clipped = clip_feature_bounds(vec)
+    assert clipped[0, 3] == 50.0
+    assert clipped[0, 9] == 1.0
+
+    # Custom bounds override
+    custom = {3: (-10.0, 10.0)}
+    clipped_custom, telemetry = clip_feature_bounds(
+        vec,
+        custom_bounds=custom,
+        track_clipped_indices=True,
+    )
+    assert clipped_custom[0, 3] == 10.0
+    assert clipped_custom[0, 9] == 1.0
+    assert telemetry[3] == 1
+    assert telemetry[9] == 1
