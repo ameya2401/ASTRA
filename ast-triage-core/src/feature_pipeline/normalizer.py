@@ -148,3 +148,85 @@ class FeatureNormalizer:
     def fit_transform(self, X: np.ndarray) -> np.ndarray:
         """Fits and transforms in a single call."""
         return self.fit(X).transform(X)
+
+
+def detect_feature_outliers(
+    X: np.ndarray,
+    threshold: float = 3.0,
+    method: str = "iqr",
+) -> Dict[str, Union[np.ndarray, Dict[int, int], int]]:
+    """
+    Identifies statistical outlier values across 28-D feature columns.
+
+    Supports interquartile range (IQR), z-score, and median absolute deviation (MAD).
+
+    Args:
+        X: Feature array of shape (N, 28) or (28,).
+        threshold: Sensitivity cutoff multiplier (e.g. 1.5/3.0 for IQR, 3.0 for z-score).
+        method: Anomaly detection method ('iqr', 'zscore', 'mad').
+
+    Returns:
+        Dictionary containing outlier_mask, column_counts, and total_outliers.
+    """
+    X_arr = np.array(X, dtype=np.float32, copy=True)
+    is_1d = X_arr.ndim == 1
+    if is_1d:
+        X_arr = X_arr.reshape(1, -1)
+
+    n_samples, n_features = X_arr.shape
+    outlier_mask = np.zeros_like(X_arr, dtype=bool)
+    column_counts: Dict[int, int] = {}
+
+    for col in range(n_features):
+        col_data = X_arr[:, col]
+        valid_mask = ~np.isnan(col_data) & ~np.isinf(col_data)
+        if np.sum(valid_mask) < 2:
+            column_counts[col] = 0
+            continue
+
+        values = col_data[valid_mask]
+
+        if method == "iqr":
+            q25, q75 = np.percentile(values, [25.0, 75.0])
+            iqr = q75 - q25
+            if iqr > 1e-6:
+                low_cut = q25 - (threshold * iqr)
+                high_cut = q75 + (threshold * iqr)
+                col_outliers = (values < low_cut) | (values > high_cut)
+            else:
+                median = np.median(values)
+                col_outliers = np.abs(values - median) > max(threshold, 1e-3)
+        elif method == "zscore":
+            mean = np.mean(values)
+            std = np.std(values)
+            if std > 1e-6:
+                z = np.abs((values - mean) / std)
+                col_outliers = z > threshold
+            else:
+                col_outliers = np.zeros_like(values, dtype=bool)
+        elif method == "mad":
+            median = np.median(values)
+            abs_dev = np.abs(values - median)
+            mad = np.median(abs_dev)
+            if mad > 1e-6:
+                modified_z = 0.6745 * abs_dev / mad
+                col_outliers = modified_z > threshold
+            else:
+                col_outliers = np.zeros_like(values, dtype=bool)
+        else:
+            raise ValueError(f"Unsupported outlier detection method: {method}")
+
+        outlier_mask[valid_mask, col] = col_outliers
+        column_counts[col] = int(np.sum(col_outliers))
+
+    total_outliers = int(np.sum(outlier_mask))
+
+    if is_1d:
+        outlier_mask = outlier_mask.reshape(-1)
+
+    return {
+        "outlier_mask": outlier_mask,
+        "column_counts": column_counts,
+        "total_outliers": total_outliers,
+    }
+

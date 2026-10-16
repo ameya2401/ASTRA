@@ -25,6 +25,7 @@ from src.feature_pipeline.normalizer import (
     FEATURE_BOUNDS,
     FeatureNormalizer,
     clip_feature_bounds,
+    detect_feature_outliers,
     impute_missing_values,
 )
 
@@ -39,5 +40,7 @@ __all__ = [
     "extract_test_metrics",
     "FeatureNormalizer",
     "clip_feature_bounds",
+    "detect_feature_outliers",
     "impute_missing_values",
 ]
+

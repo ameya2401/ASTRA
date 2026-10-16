@@ -30,6 +30,7 @@ from src.feature_pipeline import (
     build_feature_vector,
     calculate_dispersion_entropy,
     clip_feature_bounds,
+    detect_feature_outliers,
     extract_process_metrics,
     extract_test_metrics,
     impute_missing_values,
@@ -258,6 +259,21 @@ def test_feature_normalizer_pipeline():
     X_trans = normalizer.fit_transform(X)
     assert not np.any(np.isnan(X_trans))
     assert np.all(X_trans[:, 9] <= 1.0)
+
+
+def test_detect_feature_outliers_iqr():
+    # Construct synthetic data with known extreme outlier in column 0
+    rng = np.random.RandomState(42)
+    X = rng.normal(loc=10.0, scale=2.0, size=(30, 28)).astype(np.float32)
+    X[0, 0] = 100.0  # extreme positive outlier
+    result = detect_feature_outliers(X, threshold=2.0, method="iqr")
+
+    assert "outlier_mask" in result
+    assert "column_counts" in result
+    assert result["outlier_mask"][0, 0] == True
+    assert result["column_counts"][0] >= 1
+    assert result["total_outliers"] >= 1
+
 
 
 # =====================================================================
