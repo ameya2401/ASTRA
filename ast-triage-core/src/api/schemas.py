@@ -88,6 +88,10 @@ class TriageResponse(BaseModel):
         default_factory=list,
         description="Identified structural code hotspots pinpointing complexity and nesting spikes",
     )
+    metrics_summary: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="High-level metrics summary across AST, semantic, and test dimensions",
+    )
 
 
 class TriageQueueItem(BaseModel):

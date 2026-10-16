@@ -365,6 +365,24 @@ async def analyze_pull_request(
 
         elapsed_ms = round((time.perf_counter() - start_time) * 1000.0, 2)
 
+        # High-level metrics summary for PR card generation
+        metrics_summary = {
+            "intent_diff_cosine": round(float(semantic_result.get("intent_diff_cosine", 0.0)), 4),
+            "title_diff_cosine": round(float(semantic_result.get("title_diff_cosine", 0.0)), 4),
+            "semantic_drift_flag": int(semantic_result.get("semantic_drift_flag", 0)),
+            "entity_drift_jaccard": round(float(semantic_result.get("entity_drift_jaccard", 0.0)), 4),
+            "test_to_logic_ratio": round(float(test_result.get("test_to_logic_ratio", 0.0)), 4),
+            "assertions_deleted": int(test_result.get("test_assertions_deleted", 0)),
+            "test_ast_nodes_added": int(test_result.get("test_ast_nodes_added", 0)),
+            "delta_cc": int(ast_result.get("delta_cc", 0)),
+            "nesting_depth_delta": int(ast_result.get("nesting_depth_delta", 0)),
+            "ast_disturbance_index": round(float(ast_result.get("ast_disturbance_index", 0.0)), 4),
+            "control_flow_churn": round(float(ast_result.get("control_flow_churn", 0.0)), 4),
+            "nodes_added": int(ast_result.get("nodes_added", 0)),
+            "nodes_deleted": int(ast_result.get("nodes_deleted", 0)),
+            "func_signatures_mod": int(ast_result.get("func_signatures_mod", 0)),
+        }
+
         # 7. Asynchronous persistence
         if session:
             vector_list = [float(x) for x in X_sample[0]]
@@ -383,6 +401,7 @@ async def analyze_pull_request(
             confidence_score=pred_res.get("confidence_score"),
             confidence_level=pred_res.get("confidence_level"),
             code_hotspots=code_hotspots,
+            metrics_summary=metrics_summary,
         )
     except Exception as e:
         logger.error(f"Error analyzing PR #{payload.pr_number}: {e}", exc_info=True)

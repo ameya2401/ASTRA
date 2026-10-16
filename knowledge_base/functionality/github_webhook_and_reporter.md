@@ -45,11 +45,14 @@ The markdown reporter in `src/integrations/reporter.py` compiles risk assessment
    - MEDIUM Risk: Yellow badge indicating standard human review.
    - HIGH Risk: Red badge indicating deprioritize or reject advice.
 2. **Defect Probability Percentage**: Calibrated percentage derived from Platt sigmoid scaling.
-3. **Plain English Breakdown**: Non-technical summary translating raw statistics into clear statements covering Verdict, Code Complexity, Test Protection, and Goal Alignment.
-4. **Reviewer Inspection Checklist**: Actionable checkboxes tailored to the detected risk tier.
-5. **Assessment Summary with Model Certainty**: Defect probability, risk tier, analysis latency, raw score, model confidence level, and author provenance.
-6. **Collapsible SHAP Breakdown**: An HTML `<details>` section containing a tabular ledger of the top-3 marginal risk drivers, their friendly plain language names, observed values, directional impacts, and exact Code Location Hotspots (function name and line range).
-7. **Actionable Recommendation**: Specific guidance tailored to the detected risk tier and active safety overrides.
+3. **Plain English Breakdown**: Non-technical summary translating raw statistics into clear statements covering Verdict, What Changed, Code Complexity, Test Protection, and Goal Alignment.
+4. **AST Structural Differencing Ledger**: Detailed Tree-sitter table citing specific functions, line spans, churn classification (Refactored vs Added), cyclomatic complexity jumps ($\Delta \text{CC}$), max nesting levels, and total syntax churn pills.
+5. **Semantic Intent & Verification Matrix**: Dense Sentence-Transformers (`all-MiniLM-L6-v2`) cosine alignment percentage, prompt drift flags, and test-to-logic ratios.
+6. **Engineering Decision Rationale**: Transparent explanation clarifying how the machine learning model reached its risk classification based on structural disturbance and test safety nets.
+7. **Reviewer Inspection Checklist**: Actionable checkboxes tailored to the detected risk tier.
+8. **Assessment Summary with Model Certainty**: Defect probability, risk tier, analysis latency, raw score, model confidence level, and author provenance.
+9. **Collapsible SHAP Breakdown**: An HTML `<details>` section containing a tabular ledger of the top-3 marginal risk drivers, their friendly plain language names, observed values, directional impacts, and exact Code Location Hotspots (function name and line range).
+10. **Actionable Recommendation**: Specific guidance tailored to the detected risk tier and active safety overrides.
 
 ### 3.2 Sample Comment Output
 
@@ -65,9 +68,28 @@ The markdown reporter in `src/integrations/reporter.py` compiles risk assessment
 ### 💡 Plain English Breakdown
 
 - **Verdict:** Safe to merge. Very low chance of introducing bugs or regressions.
-- **Code Complexity:** Clean and straightforward. Minimal new branching added. Main hotspot: `src/utils.py:L45-72 (format_query)`.
+- **What Changed:** Modified `format_query()` in `utils.py`.
+- **Code Complexity:** Clean and straightforward. Minimal new branching added in `src/utils.py:L45-72 (format_query)`.
 - **Test Protection:** Zero test assertions were removed. Safety net remains intact.
 - **Goal Match:** Changes align directly with the pull request title and intent.
+
+### 🔬 AST Structural Differencing Ledger (Tree-sitter)
+
+| Modified Function / Scope | File & Coordinates | Churn Type | Branching Delta | Max Nesting Depth |
+| :--- | :--- | :--- | :--- | :--- |
+| `format_query()` | `utils.py:L45-72` | ➕ Added / Clean | **+1 ΔCC** | Level 2 |
+
+> ℹ️ Syntax Churn: `+35 / -0` AST nodes | Syntax Disturbance Index: `0.12`
+
+### 🧠 Semantic Intent & Verification Matrix
+
+- **Prompt-to-Diff Cosine Alignment:** `89.4%` (via Sentence-Transformers `all-MiniLM-L6-v2`) [✅ **Verified Aligned** (high semantic fidelity)]
+- **Test-to-Logic Churn Ratio:** `0.85` (ratio of test syntax nodes to logic syntax nodes)
+- **Test Protection Status:** ✅ Zero test assertions removed. Safety net remains intact.
+
+### ⚙️ Engineering Decision Rationale
+
+ASTRA classified this PR as **LOW RISK** (14.2% defect probability). Concrete syntax tree differencing confirms minimal structural disturbance, high intent-to-diff alignment, and verified test suite integrity, qualifying this PR for fast-track review.
 
 ### 📋 Reviewer Inspection Checklist
 
