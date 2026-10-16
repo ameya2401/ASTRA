@@ -355,6 +355,8 @@ async def analyze_pull_request(
             top_risk_drivers=top_risk_drivers,
             latency_ms=elapsed_ms,
             override_applied=pred_res.get("override_applied"),
+            confidence_score=pred_res.get("confidence_score"),
+            confidence_level=pred_res.get("confidence_level"),
         )
     except Exception as e:
         logger.error(f"Error analyzing PR #{payload.pr_number}: {e}", exc_info=True)
@@ -550,8 +552,18 @@ async def github_webhook_endpoint(
     triage_response = await analyze_pull_request(triage_payload, session=session)
 
     # Post comment back to GitHub if client is configured
-    markdown_report = generate_markdown_report(triage_response, repo_name, pr_number)
+    markdown_report = generate_markdown_report(
+        triage_response,
+        repo_name=repo_name,
+        pr_number=pr_number,
+        author_login=author_login,
+        author_is_bot=author_is_bot,
+    )
     posted = await github_client.post_pr_comment(repo_name, pr_number, markdown_report)
+
+    # Automatically attach risk category label to PR
+    risk_label = f"astra:{triage_response.risk_tier.lower()}-risk"
+    await github_client.add_pr_labels(repo_name, pr_number, [risk_label])
 
     comment_msg = "Triage comment posted to PR." if posted else "Triage evaluated."
 

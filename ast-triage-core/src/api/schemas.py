@@ -75,6 +75,14 @@ class TriageResponse(BaseModel):
         default=None,
         description="Safety override rule triggered, if applicable",
     )
+    confidence_score: Optional[float] = Field(
+        default=None,
+        description="Model epistemic confidence score [0.0, 1.0]",
+    )
+    confidence_level: Optional[str] = Field(
+        default=None,
+        description="Categorical confidence rating: HIGH, MEDIUM, LOW",
+    )
 
 
 class TriageQueueItem(BaseModel):

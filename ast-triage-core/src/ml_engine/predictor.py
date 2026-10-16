@@ -151,12 +151,26 @@ class RiskPredictor:
             else:
                 risk_tier = "HIGH"
 
+        # 5. Model confidence rating
+        margin_certainty = abs(calibrated_prob - 0.5) * 2.0
+        dist_val = float(X_arr[0, 9]) if X_arr.shape[1] > 9 else 0.0
+        ood_penalty = 0.15 if dist_val > 0.85 else 0.0
+        confidence_val = round(float(np.clip(0.70 + 0.28 * margin_certainty - ood_penalty, 0.50, 0.99)), 4)
+        if confidence_val >= 0.85:
+            confidence_level = "HIGH"
+        elif confidence_val >= 0.70:
+            confidence_level = "MEDIUM"
+        else:
+            confidence_level = "LOW"
+
         latency_ms = (time.perf_counter() - start_time) * 1000.0
 
         return {
             "calibrated_risk_score": round(calibrated_prob, 4),
             "raw_risk_score": round(raw_score, 4),
             "risk_tier": risk_tier,
+            "confidence_score": confidence_val,
+            "confidence_level": confidence_level,
             "top_shap_features": top_shap_strings,
             "shap_attributions": top_shap_attributions,
             "override_applied": override_reason,

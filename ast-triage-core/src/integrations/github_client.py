@@ -181,3 +181,44 @@ class GitHubClient:
             except Exception as e:
                 logger.error(f"Error fetching PR details for {repo_name} #{pr_number}: {e}")
                 return {}
+
+    async def add_pr_labels(
+        self,
+        repo_name: str,
+        pr_number: int,
+        labels: list[str],
+    ) -> bool:
+        """
+        Adds one or more labels to a pull request.
+
+        Args:
+            repo_name: Repository in owner/repo format.
+            pr_number: Pull request number.
+            labels: List of label strings to attach.
+
+        Returns:
+            True if successfully added, False otherwise.
+        """
+        if not self.token or not labels:
+            return False
+
+        url = f"{self.base_url}/repos/{repo_name}/issues/{pr_number}/labels"
+        headers = self._get_headers()
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.post(
+                    url,
+                    headers=headers,
+                    json={"labels": labels},
+                )
+                if response.status_code in (200, 201):
+                    logger.info(f"Successfully added labels {labels} to {repo_name} #{pr_number}")
+                    return True
+                logger.warning(
+                    f"Failed to add labels to {repo_name} #{pr_number}: status={response.status_code}"
+                )
+                return False
+            except Exception as e:
+                logger.error(f"Error adding labels to {repo_name} #{pr_number}: {e}")
+                return False

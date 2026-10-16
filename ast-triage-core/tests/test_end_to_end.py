@@ -326,13 +326,23 @@ def test_markdown_reporter_formatting():
         override_applied=None,
     )
 
-    markdown = generate_markdown_report(triage, repo_name="myorg/repo", pr_number=88)
+    markdown = generate_markdown_report(
+        triage,
+        repo_name="myorg/repo",
+        pr_number=88,
+        author_login="octocat",
+        author_is_bot=False,
+    )
 
     # Visual and structural assertions
     assert "## ASTRA Automated Triage Report" in markdown
     assert "https://img.shields.io/badge/ASTRA_Risk-LOW_Fast_Track-28a745.svg" in markdown
     assert "14.2%" in markdown
     assert "🟢 **LOW RISK**" in markdown
+    assert "Plain English Breakdown" in markdown
+    assert "Reviewer Inspection Checklist" in markdown
+    assert "Author Provenance" in markdown
+    assert "Branching Complexity Change" in markdown
     assert "<details>" in markdown
     assert "</details>" in markdown
     assert "`delta_cc`" in markdown
