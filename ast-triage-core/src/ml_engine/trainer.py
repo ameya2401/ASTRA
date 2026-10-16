@@ -194,100 +194,67 @@ def generate_synthetic_pr_dataset(
     y = np.zeros(n_samples, dtype=int)
     y[n_clean:] = 1
 
-    # Populate clean samples (first n_clean rows)
     for i in range(n_clean):
-        # AST Structural (F01 - F12)
-        X[i, 0] = rng.randint(25, 450)                # nodes_added
-        X[i, 1] = rng.randint(0, 100)                 # nodes_deleted
-        X[i, 2] = rng.randint(0, 80)                  # nodes_mutated
+        X[i, 0] = rng.randint(20, 500)
+        X[i, 1] = rng.exponential(scale=35.0)
+        X[i, 2] = rng.exponential(scale=30.0)
+        X[i, 3] = rng.choice([-1, 0, 1, 2, 3, 4, 5, 6], p=[0.05, 0.25, 0.25, 0.20, 0.12, 0.08, 0.04, 0.01])
+        X[i, 4] = np.clip(X[i, 3] // 2 + rng.choice([0, 1]), 0, 4)
+        X[i, 5] = rng.choice([0, 1, 2, 3], p=[0.60, 0.25, 0.10, 0.05])
+        X[i, 6] = rng.choice([0, 1, 2], p=[0.70, 0.22, 0.08])
+        X[i, 7] = float(rng.choice([0, 1], p=[0.85, 0.15]))
+        X[i, 8] = rng.randint(0, 6)
+        X[i, 9] = np.clip(0.08 + 0.04 * X[i, 3] + rng.normal(0, 0.06), 0.02, 0.60)
+        X[i, 10] = rng.choice([0, 1, 2], p=[0.65, 0.25, 0.10])
+        X[i, 11] = np.clip(0.02 + 0.03 * X[i, 3] + rng.normal(0, 0.04), 0.01, 0.50)
+        X[i, 12] = np.clip(0.85 - 0.02 * X[i, 3] + rng.normal(0, 0.10), 0.48, 0.98)
+        X[i, 13] = np.clip(X[i, 12] + rng.normal(0, 0.06), 0.45, 0.98)
+        X[i, 14] = np.clip(0.30 + 0.03 * X[i, 3] + rng.normal(0, 0.10), 0.05, 0.85)
+        X[i, 15] = np.clip(rng.exponential(scale=0.30), 0.0, 1.5)
+        X[i, 16] = 0.0
+        X[i, 17] = rng.randint(10, 200)
+        X[i, 18] = rng.choice([0, 1, 2, 3], p=[0.20, 0.50, 0.20, 0.10])
+        X[i, 19] = np.where(X[i, 18] > 0, rng.randint(20, 220), 0.0)
+        X[i, 20] = float(rng.choice([0, 1], p=[0.92, 0.08]))
+        X[i, 21] = np.clip(X[i, 19] / (X[i, 0] + 1e-5), 0.0, 2.5)
+        X[i, 22] = float(rng.choice([0, 1], p=[0.8, 0.2]))
+        X[i, 23] = rng.poisson(lam=2.0) + 1
+        X[i, 24] = rng.poisson(lam=1.8) + 1
+        X[i, 25] = np.clip(0.3 * np.log1p(X[i, 24]) + rng.normal(0, 0.2), 0.0, 2.5)
+        X[i, 26] = float(rng.rand() > 0.08)
+        X[i, 27] = float(rng.choice([0.0, 1.0], p=[0.4, 0.6]))
 
-        # 30% moderate feature additions, 70% simple clean
-        if rng.rand() < 0.30:
-            X[i, 3] = rng.choice([3, 4, 5, 6])        # delta_cc in moderate range
-            X[i, 4] = rng.choice([1, 2, 3])           # nesting_depth_delta
-            X[i, 9] = rng.uniform(0.18, 0.48)         # ast_disturbance_index
-            X[i, 12] = rng.uniform(0.55, 0.85)        # intent_diff_cosine
-            X[i, 13] = rng.uniform(0.50, 0.80)        # title_diff_cosine
-            X[i, 14] = rng.uniform(0.20, 0.70)        # entity_drift_jaccard
-            X[i, 19] = rng.randint(15, 60)            # test_ast_nodes_added
-            X[i, 21] = rng.uniform(0.18, 0.45)        # test_to_logic_ratio
-            X[i, 26] = float(rng.choice([1, 0], p=[0.9, 0.1]))
-        else:
-            X[i, 3] = rng.choice([-2, -1, 0, 1, 2])   # delta_cc
-            X[i, 4] = rng.choice([0, 1])              # nesting_depth_delta
-            X[i, 9] = rng.uniform(0.05, 0.35)         # ast_disturbance_index
-            X[i, 12] = rng.uniform(0.65, 0.95)        # intent_diff_cosine
-            X[i, 13] = rng.uniform(0.60, 0.90)        # title_diff_cosine
-            X[i, 14] = rng.uniform(0.10, 0.60)        # entity_drift_jaccard
-            X[i, 19] = rng.randint(35, 250)           # test_ast_nodes_added
-            X[i, 21] = rng.uniform(0.40, 1.40)        # test_to_logic_ratio
-            X[i, 26] = 1.0                            # ci_pass_flag
-
-        X[i, 5] = rng.choice([0, 1, 2, 3])            # func_signatures_mod
-        X[i, 6] = rng.choice([0, 1, 2])               # classes_modified
-        X[i, 7] = float(rng.choice([0, 1], p=[0.85, 0.15]))  # return_types_altered
-        X[i, 8] = rng.randint(0, 8)                   # call_graph_fanout_delta
-        X[i, 10] = rng.choice([0, 1, 2])              # try_catch_added
-        X[i, 11] = rng.uniform(0.01, 0.25)            # control_flow_churn
-        X[i, 15] = rng.uniform(0.10, 1.20)            # docstring_code_ratio
-        X[i, 16] = 0.0                                # semantic_drift_flag
-        X[i, 17] = rng.randint(5, 250)                # issue_token_length
-        X[i, 18] = rng.randint(1, 4)                  # test_files_modified
-        X[i, 20] = float(rng.choice([0, 1], p=[0.9, 0.1]))  # assertions_deleted
-        X[i, 22] = rng.choice([0, 1])                 # mock_patch_count_delta
-        X[i, 23] = rng.randint(1, 4)                  # commit_count
-        X[i, 24] = rng.randint(1, 4)                  # files_touched_count
-        X[i, 25] = rng.uniform(0.0, 1.2)              # dispersion_entropy
-        X[i, 27] = rng.choice([0.0, 1.0])             # is_known_agent_bot
-
-    # Populate defective samples (last n_defects rows)
     for i in range(n_clean, n_samples):
-        # AST Structural (F01 - F12)
-        X[i, 0] = rng.randint(30, 600)                # nodes_added
-        X[i, 1] = rng.randint(10, 200)                # nodes_deleted
-        X[i, 2] = rng.randint(15, 120)                # nodes_mutated
-
-        # 35% subtle moderate defects, 65% severe defects
-        if rng.rand() < 0.35:
-            X[i, 3] = rng.choice([4, 5, 6, 7])        # moderate cc delta
-            X[i, 4] = rng.choice([2, 3, 4])           # moderate nesting depth
-            X[i, 9] = rng.uniform(0.35, 0.65)         # ast_disturbance_index
-            X[i, 12] = rng.uniform(0.48, 0.70)        # intent_diff_cosine
-            X[i, 13] = rng.uniform(0.45, 0.65)        # title_diff_cosine
-            X[i, 14] = rng.uniform(0.40, 0.80)        # entity_drift_jaccard
-            X[i, 16] = 0.0                            # semantic_drift_flag
-            X[i, 19] = rng.choice([5, 10, 15])        # test_ast_nodes_added
-            X[i, 20] = float(rng.randint(0, 2))       # assertions_deleted
-            X[i, 21] = rng.uniform(0.10, 0.25)        # test_to_logic_ratio
-            X[i, 26] = float(rng.choice([1, 0], p=[0.75, 0.25]))
-        else:
-            X[i, 3] = rng.randint(8, 25)              # severe delta_cc
-            X[i, 4] = rng.randint(3, 8)               # nesting_depth_delta
-            X[i, 9] = rng.uniform(0.60, 0.98)         # ast_disturbance_index
-            is_drift = rng.binomial(n=1, p=0.6)
-            X[i, 16] = 1.0 if is_drift else 0.0       # semantic_drift_flag
-            X[i, 12] = rng.uniform(0.10, 0.40) if is_drift else rng.uniform(0.40, 0.55)
-            X[i, 13] = rng.uniform(0.10, 0.40) if is_drift else rng.uniform(0.38, 0.52)
-            X[i, 14] = rng.uniform(0.60, 0.95)        # entity_drift_jaccard
-            X[i, 19] = float(rng.choice([0, 5, 10]))  # test_ast_nodes_added
-            X[i, 20] = float(rng.randint(3, 12))      # assertions_deleted
-            X[i, 21] = rng.uniform(0.0, 0.12)         # test_to_logic_ratio
-            X[i, 26] = float(rng.choice([0, 1], p=[0.75, 0.25]))
-
-        X[i, 5] = rng.randint(1, 6)                   # func_signatures_mod
-        X[i, 6] = rng.randint(0, 4)                   # classes_modified
-        X[i, 7] = float(rng.choice([0, 1, 2, 3]))     # return_types_altered
-        X[i, 8] = rng.randint(3, 12)                  # call_graph_fanout_delta
-        X[i, 10] = rng.randint(1, 8)                  # try_catch_added
-        X[i, 11] = rng.uniform(0.25, 0.90)            # control_flow_churn
-        X[i, 15] = rng.uniform(0.0, 0.15)             # docstring_code_ratio
-        X[i, 17] = rng.randint(5, 150)                # issue_token_length
-        X[i, 18] = rng.choice([0, 1, 2])              # test_files_modified
-        X[i, 22] = float(rng.randint(1, 8))           # mock_patch_count_delta
-        X[i, 23] = rng.randint(3, 15)                 # commit_count
-        X[i, 24] = rng.randint(3, 18)                 # files_touched_count
-        X[i, 25] = rng.uniform(1.2, 3.8)              # dispersion_entropy
-        X[i, 27] = float(rng.choice([1.0, 0.0], p=[0.8, 0.2]))  # is_known_agent_bot
+        X[i, 0] = rng.randint(30, 600)
+        X[i, 1] = rng.exponential(scale=50.0)
+        X[i, 2] = rng.exponential(scale=45.0)
+        X[i, 3] = rng.choice([4, 5, 6, 7, 8, 10, 12, 16], p=[0.10, 0.15, 0.20, 0.15, 0.15, 0.10, 0.10, 0.05])
+        X[i, 4] = np.clip(X[i, 3] // 2 + rng.choice([1, 2, 3]), 1, 7)
+        X[i, 5] = rng.randint(1, 5)
+        X[i, 6] = rng.randint(0, 3)
+        X[i, 7] = float(rng.choice([0, 1, 2], p=[0.60, 0.30, 0.10]))
+        X[i, 8] = rng.randint(2, 10)
+        X[i, 9] = np.clip(0.20 + 0.04 * X[i, 3] + rng.normal(0, 0.08), 0.25, 0.95)
+        X[i, 10] = rng.randint(0, 4)
+        X[i, 11] = np.clip(0.08 + 0.035 * X[i, 3] + rng.normal(0, 0.05), 0.08, 0.85)
+        is_drift = rng.rand() < 0.35
+        X[i, 16] = 1.0 if is_drift else 0.0
+        X[i, 12] = rng.uniform(0.15, 0.42) if is_drift else rng.uniform(0.48, 0.72)
+        X[i, 13] = rng.uniform(0.15, 0.42) if is_drift else rng.uniform(0.45, 0.70)
+        X[i, 14] = np.clip(0.50 + 0.03 * X[i, 3] + rng.normal(0, 0.10), 0.20, 0.95)
+        X[i, 15] = np.clip(rng.exponential(scale=0.15), 0.0, 0.8)
+        X[i, 17] = rng.randint(5, 150)
+        X[i, 18] = rng.choice([0, 1, 2], p=[0.50, 0.35, 0.15])
+        X[i, 19] = np.where(X[i, 18] > 0, rng.randint(0, 30), 0.0)
+        X[i, 20] = float(rng.choice([0, 1, 2, 4, 8], p=[0.40, 0.25, 0.15, 0.12, 0.08]))
+        X[i, 21] = np.clip(X[i, 19] / (X[i, 0] + 1e-5), 0.0, 0.35)
+        X[i, 22] = float(rng.choice([0, 1, 2, 4], p=[0.4, 0.3, 0.2, 0.1]))
+        X[i, 23] = rng.poisson(lam=3.5) + 1
+        X[i, 24] = rng.poisson(lam=2.5) + 1
+        X[i, 25] = np.clip(0.3 * np.log1p(X[i, 24]) + rng.normal(0.2, 0.3), 0.0, 3.2)
+        X[i, 26] = float(rng.rand() > 0.40)
+        X[i, 27] = float(rng.choice([0.0, 1.0], p=[0.2, 0.8]))
 
     return X, y
+
 
