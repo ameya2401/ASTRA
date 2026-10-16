@@ -43,25 +43,36 @@ FEATURE_BOUNDS: Dict[int, Tuple[Optional[float], Optional[float]]] = {
 def impute_missing_values(
     X: np.ndarray,
     fill_value: float = 0.0,
+    strategy: str = "constant",
+    max_clip_bound: float = 1e5,
 ) -> np.ndarray:
     """
-    Replaces NaN, positive infinity, and negative infinity with clean numerical values.
-
-    Args:
-        X: Input array of shape (N, 28) or (28,).
-        fill_value: Default replacement value.
-
-    Returns:
-        Cleaned NumPy array with same shape and float32 dtype.
+    Replaces NaN, positive infinity, and negative infinity with clean numerical values
+    using selectable imputation strategies (constant, mean, zero).
     """
     X_clean = np.array(X, dtype=np.float32, copy=True)
+    if X_clean.size == 0:
+        return X_clean
+
     nan_mask = np.isnan(X_clean)
     pos_inf_mask = np.isposinf(X_clean)
     neg_inf_mask = np.isneginf(X_clean)
 
-    X_clean[nan_mask] = fill_value
-    X_clean[pos_inf_mask] = 1e5
-    X_clean[neg_inf_mask] = -1e5
+    if strategy == "constant":
+        X_clean[nan_mask] = fill_value
+    elif strategy == "mean":
+        for col in range(X_clean.shape[-1]):
+            valid = X_clean[~nan_mask[:, col], col] if X_clean.ndim > 1 else X_clean[~nan_mask]
+            if len(valid) > 0:
+                if X_clean.ndim > 1:
+                    X_clean[nan_mask[:, col], col] = float(np.mean(valid))
+                else:
+                    X_clean[nan_mask] = float(np.mean(valid))
+    elif strategy == "zero":
+        X_clean[nan_mask] = 0.0
+
+    X_clean[pos_inf_mask] = max_clip_bound
+    X_clean[neg_inf_mask] = -max_clip_bound
 
     return X_clean
 
