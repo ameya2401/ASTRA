@@ -23,6 +23,7 @@ class SHAPExplanationItem(BaseModel):
     description: str = Field(..., description="Human-readable impact description")
     feature_value: Optional[float] = Field(None, description="Actual observed feature value in PR")
     impact: Optional[str] = Field(None, description="Directional impact: INCREASES_RISK or DECREASES_RISK")
+    code_hotspot: Optional[str] = Field(None, description="Exact code file and line range where the metric originated")
 
 
 class PRWebhookPayload(BaseModel):
@@ -82,6 +83,10 @@ class TriageResponse(BaseModel):
     confidence_level: Optional[str] = Field(
         default=None,
         description="Categorical confidence rating: HIGH, MEDIUM, LOW",
+    )
+    code_hotspots: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Identified structural code hotspots pinpointing complexity and nesting spikes",
     )
 
 

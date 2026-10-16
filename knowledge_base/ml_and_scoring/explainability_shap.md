@@ -44,3 +44,14 @@ The runtime exports human-readable explanation strings via `format_risk_driver_s
 | `f17_semantic_drift_flag = 1` | $+0.31$ | "Intent-to-diff alignment is low (0.38 < 0.45 threshold); PR drifts from prompt." |
 | `f21_test_assertions_deleted = 4` | $+0.19$ | "4 test assertions were deleted in modified test suites." |
 | `f22_test_to_logic_ratio = 0.55` | $-0.15$ | "Comprehensive accompanying test suites partially offset complexity risk." |
+
+---
+
+## 4. Binding SHAP Drivers to AST Code Hotspots
+
+When structural features (`delta_cc`, `ast_disturbance_index`, `max_nesting_depth_delta`, `control_churn_ratio`) emerge as top positive risk drivers, ASTRA binds the mathematical SHAP contribution to concrete file coordinates captured by the AST engine:
+
+1. **AST Hotspot Matching**: The API routes layer evaluates `extract_diff_code_hotspots` on incoming PR diffs, extracting the specific function definitions undergoing complexity or nesting increases.
+2. **Attribution Linking**: The top hotspot string (e.g. `src/normalizer.py:L153-231 (detect_feature_outliers)`) is attached to `SHAPExplanationItem.code_hotspot`.
+3. **Reviewer Context**: In the final GitHub comment, reviewers see not only which mathematical feature spiked risk, but the exact file name, line range, and function responsible.
+

@@ -67,3 +67,23 @@ Head Source Code ──> parse_code() ──> Head AST Root
    - Flags changes when parameter count, parameter names, or type hints differ.
 3. **Disturbance Index Calculation**:
    - Integrates relative node modifications, cyclomatic jump, and nesting change into a single normalized index in `[0.0, 1.0]`.
+
+---
+
+## 4. Code Hotspot Extraction
+
+Located in [src/ast_engine/differ.py](file:///e:/study/ASTRA/ast-triage-core/src/ast_engine/differ.py) via `extract_diff_code_hotspots(file_path, base_code, head_code)`:
+
+1. **Tree-Sitter Function Walk**:
+   Iterates through function definitions (`function_definition`) in the base and head syntax trees.
+2. **Metric Delta Comparison**:
+   Calculates McCabe cyclomatic complexity and peak nesting depth for every matching function:
+   - $\Delta \text{CC} = \text{CC}(\text{head}) - \text{CC}(\text{base})$
+   - $\Delta \text{Nesting} = \text{Depth}(\text{head}) - \text{Depth}(\text{base})$
+3. **Coordinate Capture**:
+   Tree-sitter provides zero-indexed row and column coordinates. The engine converts them into 1-indexed line spans:
+   - `start_line = node.start_point[0] + 1`
+   - `end_line = node.end_point[0] + 1`
+4. **Hotspot Formatting**:
+   Outputs formatted reference strings like `src/normalizer.py:L153-231 (detect_feature_outliers)` alongside raw numeric deltas, prioritized by total complexity churn.
+

@@ -599,3 +599,93 @@ def _empty_metrics() -> ASTMetrics:
         try_catch_added=0,
         control_flow_churn_ratio=0.0,
     )
+
+
+def extract_diff_code_hotspots(
+    file_diffs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """
+    Identifies specific functions and code blocks responsible for structural
+    complexity spikes (cyclomatic complexity, nesting depth).
+
+    Args:
+        file_diffs: List of dicts with 'file_path', 'base_code', and 'head_code'.
+
+    Returns:
+        List of hotspot dictionaries containing file_path, symbol_name,
+        start_line, end_line, metric_name, and location description.
+    """
+    hotspots: list[dict[str, Any]] = []
+
+    def _extract_functions(code_str: str) -> dict[str, dict[str, Any]]:
+        if not code_str:
+            return {}
+        raw_bytes = bytes(code_str, "utf8")
+        tree = parse_code(code_str)
+        funcs: dict[str, dict[str, Any]] = {}
+
+        def _walk(n: Node) -> None:
+            if n.type == "function_definition":
+                name_node = n.child_by_field_name("name")
+                name = get_node_text(name_node, raw_bytes) if name_node else "<anonymous>"
+                funcs[name] = {
+                    "start_line": n.start_point.row + 1,
+                    "end_line": n.end_point.row + 1,
+                    "cc": compute_cyclomatic_complexity(n),
+                    "depth": compute_max_nesting_depth(n),
+                }
+            for child in n.children:
+                _walk(child)
+
+        _walk(tree.root_node)
+        return funcs
+
+    for file_diff in file_diffs:
+        file_path = file_diff.get("file_path", "")
+        display_path = file_path.split("/")[-1] if file_path else "diff"
+        base_code = file_diff.get("base_code", "")
+        head_code = file_diff.get("head_code", "")
+
+        if not head_code:
+            continue
+
+        base_funcs = _extract_functions(base_code)
+        head_funcs = _extract_functions(head_code)
+
+        for name, h_info in head_funcs.items():
+            b_info = base_funcs.get(name, {})
+            b_cc = b_info.get("cc", 1)
+            b_depth = b_info.get("depth", 0)
+
+            delta_cc = h_info["cc"] - b_cc
+            max_depth = h_info["depth"]
+
+            if delta_cc >= 2:
+                hotspots.append({
+                    "file_path": file_path,
+                    "display_path": display_path,
+                    "symbol_name": name,
+                    "start_line": h_info["start_line"],
+                    "end_line": h_info["end_line"],
+                    "metric_name": "delta_cc",
+                    "delta_cc": delta_cc,
+                    "max_depth": max_depth,
+                    "location_str": f"{display_path}:L{h_info['start_line']}-{h_info['end_line']} (`{name}`)",
+                    "description": f"Function `{name}` introduced +{delta_cc} branching paths (lines {h_info['start_line']}-{h_info['end_line']})",
+                })
+            elif max_depth >= 3 and (max_depth - b_depth) >= 1:
+                hotspots.append({
+                    "file_path": file_path,
+                    "display_path": display_path,
+                    "symbol_name": name,
+                    "start_line": h_info["start_line"],
+                    "end_line": h_info["end_line"],
+                    "metric_name": "nesting_depth_delta",
+                    "delta_cc": delta_cc,
+                    "max_depth": max_depth,
+                    "location_str": f"{display_path}:L{h_info['start_line']}-{h_info['end_line']} (`{name}`)",
+                    "description": f"Function `{name}` reached nesting depth {max_depth} (lines {h_info['start_line']}-{h_info['end_line']})",
+                })
+
+    return hotspots
+

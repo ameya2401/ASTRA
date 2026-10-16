@@ -16,15 +16,17 @@ Quick Usage:
     result = diff_single_file_ast(base_code, head_code)
     print(result["ast_disturbance_index"])
 """
-from src.ast_engine.differ import diff_single_file_ast, diff_multi_file, ASTMetrics
+from src.ast_engine.differ import diff_single_file_ast, diff_multi_file, extract_diff_code_hotspots, ASTMetrics
 from src.ast_engine.cyclomatic import compute_cyclomatic_complexity, compute_max_nesting_depth
 from src.ast_engine.parser import parse_code
 
 __all__ = [
     "diff_single_file_ast",
     "diff_multi_file",
+    "extract_diff_code_hotspots",
     "ASTMetrics",
     "compute_cyclomatic_complexity",
     "compute_max_nesting_depth",
     "parse_code",
 ]
+

@@ -48,7 +48,7 @@ The markdown reporter in `src/integrations/reporter.py` compiles risk assessment
 3. **Plain English Breakdown**: Non-technical summary translating raw statistics into clear statements covering Verdict, Code Complexity, Test Protection, and Goal Alignment.
 4. **Reviewer Inspection Checklist**: Actionable checkboxes tailored to the detected risk tier.
 5. **Assessment Summary with Model Certainty**: Defect probability, risk tier, analysis latency, raw score, model confidence level, and author provenance.
-6. **Collapsible SHAP Breakdown**: An HTML `<details>` section containing a tabular ledger of the top-3 marginal risk drivers, their friendly plain language names, observed values, and directional impacts.
+6. **Collapsible SHAP Breakdown**: An HTML `<details>` section containing a tabular ledger of the top-3 marginal risk drivers, their friendly plain language names, observed values, directional impacts, and exact Code Location Hotspots (function name and line range).
 7. **Actionable Recommendation**: Specific guidance tailored to the detected risk tier and active safety overrides.
 
 ### 3.2 Sample Comment Output
@@ -65,7 +65,7 @@ The markdown reporter in `src/integrations/reporter.py` compiles risk assessment
 ### 💡 Plain English Breakdown
 
 - **Verdict:** Safe to merge. Very low chance of introducing bugs or regressions.
-- **Code Complexity:** Clean and straightforward. Minimal new branching added.
+- **Code Complexity:** Clean and straightforward. Minimal new branching added. Main hotspot: `src/utils.py:L45-72 (format_query)`.
 - **Test Protection:** Zero test assertions were removed. Safety net remains intact.
 - **Goal Match:** Changes align directly with the pull request title and intent.
 
@@ -87,10 +87,10 @@ The markdown reporter in `src/integrations/reporter.py` compiles risk assessment
 <details>
 <summary><b>Top Structural and Semantic Risk Drivers (SHAP Attribution)</b></summary>
 
-| Rank | Feature | Plain Language Meaning | Impact | Marginal SHAP | Details |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | `intent_diff_cosine` | PR Prompt vs Diff Alignment | Decreases Risk | `-0.0456` | intent_diff_cosine = 0.89 (DECREASES_RISK) |
-| 2 | `delta_cc` | Branching Complexity Change | Increases Risk | `+0.0123` | delta_cc = 1 (INCREASES_RISK) |
+| Rank | Feature | Plain Language Meaning | Impact | Marginal SHAP | Details | Code Location Hotspot |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | `intent_diff_cosine` | PR Prompt vs Diff Alignment | Decreases Risk | `-0.0456` | intent_diff_cosine = 0.89 (DECREASES_RISK) | Diff global |
+| 2 | `delta_cc` | Branching Complexity Change | Increases Risk | `+0.0123` | delta_cc = 1 (INCREASES_RISK) | `src/utils.py:L45-72 (format_query)` |
 
 </details>
 

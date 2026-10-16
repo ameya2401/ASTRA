@@ -74,17 +74,19 @@ def _build_plain_english_breakdown(triage: TriageResponse) -> List[str]:
     if "delta_cc" in driver_map:
         item = driver_map["delta_cc"]
         val = item.feature_value if item.feature_value is not None else 0.0
+        loc_str = f" in {item.code_hotspot}" if item.code_hotspot and "diff" not in item.code_hotspot.lower() else ""
         if val <= 2:
-            complexity_msg = "**Code Complexity:** Clean and straightforward. Minimal new branching added."
+            complexity_msg = f"**Code Complexity:** Clean and straightforward. Minimal new branching added{loc_str}."
         else:
-            complexity_msg = f"**Code Complexity:** Branching complexity increased by +{int(val)} branches. Check conditional paths."
+            complexity_msg = f"**Code Complexity:** Branching complexity increased by +{int(val)} branches{loc_str}. Check conditional paths."
     elif "nesting_depth_delta" in driver_map:
         item = driver_map["nesting_depth_delta"]
         val = item.feature_value if item.feature_value is not None else 0.0
+        loc_str = f" in {item.code_hotspot}" if item.code_hotspot and "diff" not in item.code_hotspot.lower() else ""
         if val <= 1:
-            complexity_msg = "**Code Nesting:** Shallow nesting maintained. Easy to read and reason about."
+            complexity_msg = f"**Code Nesting:** Shallow nesting maintained{loc_str}. Easy to read and reason about."
         else:
-            complexity_msg = f"**Code Nesting:** Nesting increased by +{int(val)} levels. Watch for deeply nested blocks."
+            complexity_msg = f"**Code Nesting:** Nesting increased by +{int(val)} levels{loc_str}. Watch for deeply nested blocks."
     else:
         complexity_msg = "**Code Complexity:** Structural changes remain within safe nominal bounds."
 
@@ -241,7 +243,7 @@ def generate_markdown_report(
         "<details>",
         "<summary><b>Top Structural and Semantic Risk Drivers (SHAP Attribution)</b></summary>",
         "",
-        "| Rank | Feature | Plain Language Meaning | Impact | Marginal SHAP | Details |",
+        "| Rank | Feature | Plain Language Meaning | Impact | Marginal SHAP | Code Location Hotspot |",
         "| :--- | :--- | :--- | :--- | :--- | :--- |",
     ])
 
@@ -251,8 +253,9 @@ def generate_markdown_report(
             sign = "+" if item.shap_value > 0 else ""
             shap_formatted = f"`{sign}{item.shap_value:.4f}`"
             display_name = FEATURE_HUMAN_NAMES.get(item.feature_name, item.feature_name.replace("_", " ").title())
+            hotspot_display = item.code_hotspot or item.description
             lines.append(
-                f"| {idx} | `{item.feature_name}` | {display_name} | {impact_display} | {shap_formatted} | {item.description} |"
+                f"| {idx} | `{item.feature_name}` | {display_name} | {impact_display} | {shap_formatted} | {hotspot_display} |"
             )
     else:
         lines.append("| - | Baseline | Nominal changes | Neutral | `0.0000` | Baseline nominal changes |")

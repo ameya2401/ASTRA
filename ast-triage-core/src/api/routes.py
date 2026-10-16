@@ -27,7 +27,7 @@ from src.api.schemas import (
     TriageResponse,
     TriageStatsResponse,
 )
-from src.ast_engine.differ import ASTMetrics, diff_multi_file
+from src.ast_engine.differ import ASTMetrics, diff_multi_file, extract_diff_code_hotspots
 from src.feature_pipeline.normalizer import clip_feature_bounds, impute_missing_values
 from src.feature_pipeline.vector_builder import (
     build_feature_vector,
@@ -50,7 +50,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-def parse_diff_into_files(raw_diff: str) -> List[Dict[str, str]]:
+def parse_diff_into_files(raw_diff: str) -> List[Dict[str, Any]]:
     """
     Parses a unified diff string into base and head source code pairs per file.
 
@@ -58,18 +58,26 @@ def parse_diff_into_files(raw_diff: str) -> List[Dict[str, str]]:
         raw_diff: Unified diff string.
 
     Returns:
-        List of dicts with 'base_code' and 'head_code' keys.
+        List of dicts with 'file_path', 'base_code', and 'head_code' keys.
     """
     if not raw_diff or not raw_diff.strip():
-        return [{"base_code": "", "head_code": ""}]
+        return [{"file_path": "diff", "base_code": "", "head_code": ""}]
 
     # If it is a multi-file unified git diff, split on "diff --git "
     if "diff --git " in raw_diff:
         chunks = raw_diff.split("diff --git ")
-        file_diffs: List[Dict[str, str]] = []
+        file_diffs: List[Dict[str, Any]] = []
         for chunk in chunks:
             if not chunk.strip():
                 continue
+            first_line = chunk.splitlines()[0]
+            parts = first_line.split()
+            file_path = ""
+            if len(parts) >= 2 and parts[1].startswith("b/"):
+                file_path = parts[1][2:]
+            elif len(parts) >= 1 and parts[0].startswith("a/"):
+                file_path = parts[0][2:]
+
             base_lines: List[str] = []
             head_lines: List[str] = []
             for line in chunk.splitlines():
@@ -83,6 +91,7 @@ def parse_diff_into_files(raw_diff: str) -> List[Dict[str, str]]:
                     base_lines.append(line[1:])
                     head_lines.append(line[1:])
             file_diffs.append({
+                "file_path": file_path,
                 "base_code": "\n".join(base_lines),
                 "head_code": "\n".join(head_lines),
             })
@@ -277,6 +286,7 @@ async def analyze_pull_request(
         # 1. Structural AST Features (F01-F12)
         file_diffs = parse_diff_into_files(payload.raw_diff)
         ast_result = diff_multi_file(file_diffs)
+        code_hotspots = extract_diff_code_hotspots(file_diffs)
 
         # 2. Semantic Drift Features (F13-F18)
         analyzer = SemanticDriftAnalyzer()
@@ -325,16 +335,31 @@ async def analyze_pull_request(
         else:
             recommendation = "DEPRIORITIZE / REJECT: Probable semantic divergence, test cheat, or AST bloat."
 
-        # Map SHAP attributions to response items
+        # Map SHAP attributions to response items and link to code hotspots
         top_risk_drivers: List[SHAPExplanationItem] = []
         for item in pred_res.get("shap_attributions", [])[:3]:
+            feat_name = item["feature_name"]
+            matched_hotspot = None
+            if feat_name in ("delta_cc", "nesting_depth_delta", "nodes_added", "control_flow_churn", "ast_disturbance_index"):
+                for h in code_hotspots:
+                    if h.get("metric_name") == feat_name or feat_name in ("delta_cc", "nodes_added"):
+                        matched_hotspot = h.get("location_str")
+                        break
+            elif feat_name in ("intent_diff_cosine", "title_diff_cosine", "semantic_drift_flag"):
+                matched_hotspot = "PR Title & Description"
+            elif feat_name in ("test_to_logic_ratio", "assertions_deleted", "test_ast_nodes_added"):
+                matched_hotspot = "Test Suite Files"
+            elif feat_name in ("commit_count", "files_touched_count", "dispersion_entropy", "is_known_agent_bot"):
+                matched_hotspot = "Git Provenance"
+
             top_risk_drivers.append(
                 SHAPExplanationItem(
-                    feature_name=item["feature_name"],
+                    feature_name=feat_name,
                     shap_value=round(item["shap_value"], 4),
-                    description=f"{item['feature_name']} = {item['feature_value']} ({item['impact']})",
+                    description=f"{feat_name} = {item['feature_value']} ({item['impact']})",
                     feature_value=item.get("feature_value"),
                     impact=item.get("impact"),
+                    code_hotspot=matched_hotspot,
                 )
             )
 
@@ -357,6 +382,7 @@ async def analyze_pull_request(
             override_applied=pred_res.get("override_applied"),
             confidence_score=pred_res.get("confidence_score"),
             confidence_level=pred_res.get("confidence_level"),
+            code_hotspots=code_hotspots,
         )
     except Exception as e:
         logger.error(f"Error analyzing PR #{payload.pr_number}: {e}", exc_info=True)
