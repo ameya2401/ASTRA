@@ -1,16 +1,33 @@
 {
-  "framework": null,
-  "buildCommand": null,
-  "outputDirectory": "landing_page",
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/landing_page/index.html"
+    },
+    {
       "source": "/landing",
-      "destination": "/index.html"
+      "destination": "/landing_page/index.html"
     },
     {
       "source": "/landing/(.*)",
-      "destination": "/$1"
+      "destination": "/landing_page/$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/landing_page/assets/$1"
+    },
+    {
+      "source": "/style.css",
+      "destination": "/landing_page/style.css"
+    },
+    {
+      "source": "/app.js",
+      "destination": "/landing_page/app.js"
+    },
+    {
+      "source": "/favicon.png",
+      "destination": "/landing_page/favicon.png"
     }
   ]
 }
