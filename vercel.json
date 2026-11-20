@@ -1,17 +1,16 @@
 {
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "landing_page",
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/landing",
+      "destination": "/index.html"
+    },
+    {
       "source": "/landing/(.*)",
-      "destination": "/landing_page/$1"
-    },
-    {
-      "source": "/",
-      "destination": "/landing_page/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/landing_page/$1"
+      "destination": "/$1"
     }
   ]
 }
