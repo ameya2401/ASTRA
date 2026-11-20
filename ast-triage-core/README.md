@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="../assets/logo-name.png" width="240" alt="ASTRA Logo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/logo-name-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="../assets/logo-name.png">
+    <img src="../assets/logo-name.png" width="220" alt="ASTRA Logo">
+  </picture>
 </p>
 
 # AST-Triage Core
