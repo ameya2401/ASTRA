@@ -1,0 +1,97 @@
+name: ASTRA Risk Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  triage:
+    name: ASTRA AI-PR Risk Triage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract PR Diff
+        id: pr_diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.patch
+          DIFF_SIZE=$(wc -c < pr_diff.patch)
+          echo "diff_size=$DIFF_SIZE" >> $GITHUB_OUTPUT
+          echo "PR Diff extracted ($DIFF_SIZE bytes)."
+
+      - name: Run ASTRA Triage Inspection
+        id: astra_triage
+        env:
+          ASTRA_API_URL: "https://astra-08bw.onrender.com/api/v1/triage"
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          python3 -c "
+          import json, os, urllib.request, sys
+
+          api_url = os.environ.get('ASTRA_API_URL', 'https://astra-08bw.onrender.com/api/v1/triage')
+          diff_content = open('pr_diff.patch', 'r', encoding='utf-8', errors='ignore').read()
+
+          payload = {
+              'repo_name': '${{ github.repository }}',
+              'pr_number': ${{ github.event.pull_request.number }},
+              'pr_title': os.environ.get('PR_TITLE', ''),
+              'pr_body': os.environ.get('PR_BODY', ''),
+              'raw_diff': diff_content,
+              'author_login': os.environ.get('AUTHOR', ''),
+              'author_is_bot': False
+          }
+
+          req = urllib.request.Request(
+              api_url,
+              data=json.dumps(payload).encode('utf-8'),
+              headers={'Content-Type': 'application/json'},
+              method='POST'
+          )
+
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  res = json.loads(resp.read().decode('utf-8'))
+          except Exception as e:
+              print(f'Warning: ASTRA service call encountered an issue: {e}')
+              sys.exit(0)
+
+          risk_tier = res.get('risk_tier', 'LOW')
+          prob = res.get('risk_probability', 0.0)
+          latency = res.get('latency_ms', 0.0)
+          shap_features = res.get('top_shap_features', [])
+          hotspots = res.get('ast_code_hotspots', [])
+
+          # Write GitHub Step Summary
+          summary_file = os.environ.get('GITHUB_STEP_SUMMARY')
+          if summary_file:
+              with open(summary_file, 'a', encoding='utf-8') as sf:
+                  badge_color = 'red' if risk_tier == 'HIGH' else ('yellow' if risk_tier == 'MEDIUM' else 'green')
+                  sf.write(f'# ASTRA Risk Gate: {risk_tier} RISK\\n\\n')
+                  sf.write(f'- **Calibrated Risk Probability:** `{prob:.2%}`\\n')
+                  sf.write(f'- **Inference Latency:** `{latency:.2f} ms`\\n\\n')
+                  if shap_features:
+                      sf.write('### Top Risk Contributors (Local SHAP Attribution)\\n')
+                      for f in shap_features:
+                          sf.write(f'- `{f}`\\n')
+                      sf.write('\\n')
+                  if hotspots:
+                      sf.write('### Detected AST Churn Hotspots\\n')
+                      for h in hotspots[:5]:
+                          sf.write(f'- `{h.get(\"file_path\", \"\")}:{h.get(\"name\", \"\")}` (Delta CC: `+{h.get(\"delta_cc\", 0)}`)\\n')
+
+          print(f'ASTRA Triage Result: {risk_tier} ({prob:.2%})')
+
+          if risk_tier == 'HIGH' and prob >= 0.65:
+              print('::error::ASTRA Gate: High defect probability detected in PR diff. Merge blocked pending human review.')
+              sys.exit(1)
+          "

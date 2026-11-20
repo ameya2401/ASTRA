@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASTRA Documentation — API Reference & Integration Guide</title>
+  <meta name="description" content="Official documentation for ASTRA: AST-Triage, Semantic Intent Drift, and TreeSHAP risk stratification for AI coding agents.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/static/docs/favicon.png">
+  <link rel="stylesheet" href="/static/docs/docs.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="docs-header">
+    <div class="docs-header-left">
+      <a href="/landing" class="docs-brand" aria-label="ASTRA Home">
+        <img src="/static/docs/logo-name.png" alt="ASTRA" class="brand-logo-name" height="28">
+      </a>
+      <span class="docs-version">v1.0.0</span>
+
+      <div class="docs-header-search">
+        <input type="text" id="doc-search-input" placeholder="Search documentation..." autocomplete="off">
+        <span class="docs-search-shortcut">/</span>
+      </div>
+    </div>
+
+    <div class="docs-header-right">
+      <a href="/landing" class="docs-nav-link">Product Landing</a>
+      <a href="/landing#simulator" class="docs-nav-link">Live Simulator</a>
+      <a href="/api/v1/health" target="_blank" class="docs-nav-link">System Health</a>
+      <a href="https://github.com/ameya2401/ASTRA" target="_blank" rel="noopener noreferrer" class="docs-btn-app docs-btn-outline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+      <a href="/openapi.json" target="_blank" class="docs-btn-app docs-btn-primary">OpenAPI JSON</a>
+    </div>
+  </header>
+
+  <!-- Docs Layout: 3-Column / 2-Column Structure -->
+  <div class="docs-layout">
+    
+    <!-- Left Sidebar Navigation -->
+    <aside class="docs-sidebar" id="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Getting Started</div>
+        <a href="#overview" class="sidebar-item active">System Overview</a>
+        <a href="#quickstart" class="sidebar-item">Quickstart Guide</a>
+        <a href="#auth" class="sidebar-item">Authentication & Security</a>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">API Endpoints</div>
+        <a href="#endpoint-triage" class="sidebar-item">
+          <span class="sidebar-method-badge badge-post">POST</span>
+          <span>Triage PR</span>
+        </a>
+        <a href="#endpoint-queue" class="sidebar-item">
+          <span class="sidebar-method-badge badge-get">GET</span>
+          <span>Review Queue</span>
+        </a>
+        <a href="#endpoint-stats" class="sidebar-item">
+          <span class="sidebar-method-badge badge-get">GET</span>
+          <span>Triage Stats</span>
+        </a>
+        <a href="#endpoint-webhook" class="sidebar-item">
+          <span class="sidebar-method-badge badge-post">POST</span>
+          <span>GitHub Webhook</span>
+        </a>
+        <a href="#endpoint-health" class="sidebar-item">
+          <span class="sidebar-method-badge badge-get">GET</span>
+          <span>System Health</span>
+        </a>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Core Architecture</div>
+        <a href="#concept-features" class="sidebar-item">28-D Feature Matrix</a>
+        <a href="#concept-ast" class="sidebar-item">AST Differencing (F01–F12)</a>
+        <a href="#concept-semantic" class="sidebar-item">Semantic Intent (F13–F18)</a>
+        <a href="#concept-shap" class="sidebar-item">TreeSHAP Explainability</a>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Integration & CI/CD</div>
+        <a href="#ci-action" class="sidebar-item">GitHub Action Gate</a>
+        <a href="#production-rules" class="sidebar-item">Production Gate Thresholds</a>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="docs-main">
+      <article class="docs-article">
+
+        <!-- Breadcrumbs -->
+        <div class="docs-breadcrumbs">
+          <a href="/docs">Docs</a>
+          <span>/</span>
+          <span>API Reference</span>
+          <span>/</span>
+          <span style="color: var(--color-ink);">v1.0.0</span>
+        </div>
+
+        <h1 class="docs-title">ASTRA Developer Documentation</h1>
+        <p class="docs-lead">
+          ASTRA intercepts pull requests generated by AI coding agents (Devin, Claude Code, Copilot, OpenHands) before human review. It extracts concrete syntax tree deltas, NLP semantic drift, and test churn to classify defect risk with local TreeSHAP attribution.
+        </p>
+
+        <!-- 1. System Overview Section -->
+        <section id="overview" class="docs-section">
+          <h2 class="docs-section-heading">1. System Overview</h2>
+          <p>
+            Standard CI suites and linters suffer from the <em>Green CI Mirage</em>: an AI agent pull request can pass syntax checks and unit tests simply by deleting assertions, modifying fixtures, or increasing cyclomatic nesting. ASTRA operates as a pre-merge triage barrier, evaluating 28 structural and semantic signals in under 300ms.
+          </p>
+
+          <div class="docs-callout callout-tip">
+            <span class="callout-icon">💡</span>
+            <div>
+              <strong>Sub-300ms Inference SLA:</strong> All neural sentence embeddings (`all-MiniLM-L6-v2`) and Platt-calibrated XGBoost model checkpoints are pre-warmed as thread-safe singletons at application startup.
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Quickstart Guide Section -->
+        <section id="quickstart" class="docs-section">
+          <h2 class="docs-section-heading">2. Quickstart Guide</h2>
+          <p>
+            You can test the triage API immediately with curl, Python, or the interactive tester built into this documentation page.
+          </p>
+
+          <div class="code-container">
+            <div class="code-tabs">
+              <div class="code-tab-list">
+                <button class="code-tab-btn active" onclick="switchTab(this, 'quick-curl')">cURL</button>
+                <button class="code-tab-btn" onclick="switchTab(this, 'quick-py')">Python</button>
+                <button class="code-tab-btn" onclick="switchTab(this, 'quick-js')">JavaScript</button>
+              </div>
+              <button class="code-copy-btn" onclick="copySnippet(this)">Copy</button>
+            </div>
+            <div id="quick-curl" class="code-content">curl -X POST "http://127.0.0.1:8000/api/v1/triage/analyze" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_name": "ast-org/backend-service",
+    "pr_number": 42,
+    "title": "Fix session timeout flakiness",
+    "issue_description": "Timeout handler intermittently fails on slow runners.",
+    "raw_diff": "--- a/session.py\n+++ b/session.py\n@@ -10,3 +10,3 @@\n-def wait(): raise TimeoutError()\n+def wait(): pass",
+    "author_login": "claude-code[bot]",
+    "author_is_bot": true
+  }'</div>
+            <div id="quick-py" class="code-content" style="display: none;">import httpx
+
+payload = {
+    "repo_name": "ast-org/backend-service",
+    "pr_number": 42,
+    "title": "Fix session timeout flakiness",
+    "issue_description": "Timeout handler intermittently fails on slow runners.",
+    "raw_diff": "--- a/session.py\n+++ b/session.py\n@@ -10,3 +10,3 @@\n-def wait(): raise TimeoutError()\n+def wait(): pass",
+    "author_login": "claude-code[bot]",
+    "author_is_bot": True,
+}
+
+response = httpx.post("http://127.0.0.1:8000/api/v1/triage/analyze", json=payload)
+print(response.json())</div>
+            <div id="quick-js" class="code-content" style="display: none;">const response = await fetch("http://127.0.0.1:8000/api/v1/triage/analyze", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    repo_name: "ast-org/backend-service",
+    pr_number: 42,
+    title: "Fix session timeout flakiness",
+    issue_description: "Timeout handler intermittently fails on slow runners.",
+    raw_diff: "--- a/session.py\n+++ b/session.py\n@@ -10,3 +10,3 @@\n-def wait(): raise TimeoutError()\n+def wait(): pass",
+    author_login: "claude-code[bot]",
+    author_is_bot: true
+  })
+});
+const data = await response.json();
+console.log(data);</div>
+          </div>
+        </section>
+
+        <!-- 3. Authentication Section -->
+        <section id="auth" class="docs-section">
+          <h2 class="docs-section-heading">3. Authentication & Security</h2>
+          <p>
+            When integrating with GitHub Apps or webhooks, ASTRA authenticates incoming requests using HMAC SHA-256 signatures passed in the `X-Hub-Signature-256` header. For local development or internal service-to-service calls, standard JSON REST requests require no authentication.
+          </p>
+        </section>
+
+        <!-- 4. API Endpoints -->
+        <section id="endpoints" class="docs-section">
+          <h2 class="docs-section-heading">4. API Reference</h2>
+
+          <!-- Endpoint 1: POST /api/v1/triage/analyze -->
+          <div class="endpoint-card" id="endpoint-triage">
+            <div class="endpoint-header">
+              <div class="endpoint-target">
+                <span class="endpoint-badge badge-post">POST</span>
+                <span class="endpoint-path">/api/v1/triage/analyze</span>
+              </div>
+              <span class="endpoint-summary-pill">Core Triage Engine</span>
+            </div>
+            <div class="endpoint-body">
+              <p class="endpoint-desc">
+                Ingests a pull request's unified diff, title, prompt specification, and provenance data. Computes concrete syntax tree deltas, semantic intent drift, and returns calibrated defect probability, risk tier (`LOW`, `MEDIUM`, `HIGH`), and local TreeSHAP attribution drivers.
+              </p>
+
+              <!-- Request Body Table -->
+              <div class="docs-table-wrapper">
+                <table class="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Type</th>
+                      <th>Requirement</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="param-name">repo_name</span></td>
+                      <td><span class="param-type">string</span></td>
+                      <td><span class="param-req">required</span></td>
+                      <td>GitHub repository in `owner/repo` format.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="param-name">pr_number</span></td>
+                      <td><span class="param-type">integer</span></td>
+                      <td><span class="param-req">required</span></td>
+                      <td>Pull request number.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="param-name">title</span></td>
+                      <td><span class="param-type">string</span></td>
+                      <td><span class="param-req">required</span></td>
+                      <td>PR title summarizing the proposed modification.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="param-name">issue_description</span></td>
+                      <td><span class="param-type">string</span></td>
+                      <td><span class="param-opt">optional</span></td>
+                      <td>Original issue prompt or user instruction given to the AI agent.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="param-name">raw_diff</span></td>
+                      <td><span class="param-type">string</span></td>
+                      <td><span class="param-req">required</span></td>
+                      <td>Unified git diff string containing file deltas.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="param-name">author_login</span></td>
+                      <td><span class="param-type">string</span></td>
+                      <td><span class="param-opt">optional</span></td>
+                      <td>GitHub login of the PR author (e.g. `devin-ai-integration[bot]`).</td>
+                    </tr>
+                    <tr>
+                      <td><span class="param-name">author_is_bot</span></td>
+                      <td><span class="param-type">boolean</span></td>
+                      <td><span class="param-opt">default: false</span></td>
+                      <td>Whether author is a detected bot or automated agent.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Interactive Live Console -->
+              <div class="tester-box">
+                <div class="tester-title">
+                  <span>Interactive Endpoint Console</span>
+                  <button class="tester-run-btn" onclick="executeTriageTest(this)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <span>Send Live Request</span>
+                  </button>
+                </div>
+                <div class="tester-response" id="triage-response-box"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endpoint 2: GET /api/v1/triage/queue/{repo_name} -->
+          <div class="endpoint-card" id="endpoint-queue">
+            <div class="endpoint-header">
+              <div class="endpoint-target">
+                <span class="endpoint-badge badge-get">GET</span>
+                <span class="endpoint-path">/api/v1/triage/queue/{repo_name}</span>
+              </div>
+              <span class="endpoint-summary-pill">Review Prioritization</span>
+            </div>
+            <div class="endpoint-body">
+              <p class="endpoint-desc">
+                Retrieves the review queue for a repository sorted by defect risk score descending. Allows maintainers to prioritize high-risk pull requests requiring manual scrutiny before approving safe refactors.
+              </p>
+
+              <!-- Interactive Live Console -->
+              <div class="tester-box">
+                <div class="tester-title">
+                  <span>Interactive Endpoint Console</span>
+                  <button class="tester-run-btn" onclick="executeQueueTest(this)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <span>Send Live Request</span>
+                  </button>
+                </div>
+                <div class="tester-response" id="queue-response-box"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endpoint 3: GET /api/v1/triage/stats -->
+          <div class="endpoint-card" id="endpoint-stats">
+            <div class="endpoint-header">
+              <div class="endpoint-target">
+                <span class="endpoint-badge badge-get">GET</span>
+                <span class="endpoint-path">/api/v1/triage/stats</span>
+              </div>
+              <span class="endpoint-summary-pill">System Statistics</span>
+            </div>
+            <div class="endpoint-body">
+              <p class="endpoint-desc">
+                Returns aggregate operational metrics across all triaged pull requests: total scanned, percentage categorized as high/medium/low risk, and average inference latency.
+              </p>
+
+              <!-- Interactive Live Console -->
+              <div class="tester-box">
+                <div class="tester-title">
+                  <span>Interactive Endpoint Console</span>
+                  <button class="tester-run-btn" onclick="executeStatsTest(this)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <span>Send Live Request</span>
+                  </button>
+                </div>
+                <div class="tester-response" id="stats-response-box"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endpoint 4: POST /api/v1/github/webhook -->
+          <div class="endpoint-card" id="endpoint-webhook">
+            <div class="endpoint-header">
+              <div class="endpoint-target">
+                <span class="endpoint-badge badge-post">POST</span>
+                <span class="endpoint-path">/api/v1/github/webhook</span>
+              </div>
+              <span class="endpoint-summary-pill">GitHub Ingestion</span>
+            </div>
+            <div class="endpoint-body">
+              <p class="endpoint-desc">
+                Receives native GitHub webhook `pull_request` payloads. Verifies webhook HMAC signature, fetches unified diff, runs AST risk classification, and posts an automated governance comment on the pull request.
+              </p>
+            </div>
+          </div>
+
+          <!-- Endpoint 5: GET /api/v1/health -->
+          <div class="endpoint-card" id="endpoint-health">
+            <div class="endpoint-header">
+              <div class="endpoint-target">
+                <span class="endpoint-badge badge-get">GET</span>
+                <span class="endpoint-path">/api/v1/health</span>
+              </div>
+              <span class="endpoint-summary-pill">Liveness & Readiness Probe</span>
+            </div>
+            <div class="endpoint-body">
+              <p class="endpoint-desc">
+                Returns health state confirming async database connectivity, XGBoost classifier readiness, and sentence transformer initialization.
+              </p>
+
+              <!-- Interactive Live Console -->
+              <div class="tester-box">
+                <div class="tester-title">
+                  <span>Interactive Endpoint Console</span>
+                  <button class="tester-run-btn" onclick="executeHealthTest(this)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <span>Send Live Request</span>
+                  </button>
+                </div>
+                <div class="tester-response" id="health-response-box"></div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- 5. Core Concepts Section -->
+        <section id="concept-features" class="docs-section">
+          <h2 class="docs-section-heading">5. 28-D Feature Matrix & Architecture</h2>
+          <p>
+            ASTRA converts every incoming pull request into an empirical 28-dimensional vector across four analytical pillars:
+          </p>
+
+          <div class="docs-table-wrapper">
+            <table class="docs-table">
+              <thead>
+                <tr>
+                  <th>Pillar</th>
+                  <th>Feature IDs</th>
+                  <th>Primary Analytical Signals</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>AST Structural Churn</strong></td>
+                  <td><code>F01–F12</code></td>
+                  <td>Tree-sitter node churn, cyclomatic delta (&Delta;CC), max nesting depth delta, call graph fan-out delta, disturbance index.</td>
+                </tr>
+                <tr>
+                  <td><strong>NLP Semantic Intent Drift</strong></td>
+                  <td><code>F13–F18</code></td>
+                  <td>MiniLM cosine distance between issue prompt and code diff, entity drift Jaccard, docstring-to-code churn ratio.</td>
+                </tr>
+                <tr>
+                  <td><strong>Test Protection & Tampering</strong></td>
+                  <td><code>F19–F23</code></td>
+                  <td>Deleted assertion count, test-to-logic ratio, test AST nodes added, mock/patch count delta.</td>
+                </tr>
+                <tr>
+                  <td><strong>Process & Provenance</strong></td>
+                  <td><code>F24–F28</code></td>
+                  <td>Commit dispersion entropy, files touched, bot author flag, CI run status.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. CI/CD Integration Section -->
+        <section id="ci-action" class="docs-section">
+          <h2 class="docs-section-heading">6. GitHub Action CI/CD Risk Gate</h2>
+          <p>
+            Enforce automated merge blocking in your repositories by placing the following workflow at `.github/workflows/astra-gate.yml`:
+          </p>
+
+          <div class="code-container">
+            <div class="code-tabs">
+              <div class="code-tab-list">
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #8b949e; padding: 8px 12px;">.github/workflows/astra-gate.yml</span>
+              </div>
+              <button class="code-copy-btn" onclick="copySnippet(this)">Copy</button>
+            </div>
+            <div class="code-content">name: ASTRA Pre-Merge PR Risk Gate
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  triage-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Evaluate PR Risk Gate
+        env:
+          ASTRA_API_URL: ${{ secrets.ASTRA_API_URL || 'http://127.0.0.1:8000' }}
+        run: |
+          DIFF_CONTENT=$(git diff origin/${{ github.base_ref }}...HEAD)
+          PAYLOAD=$(jq -n \
+            --arg repo "${{ github.repository }}" \
+            --arg pr "${{ github.event.pull_request.number }}" \
+            --arg title "${{ github.event.pull_request.title }}" \
+            --arg body "${{ github.event.pull_request.body }}" \
+            --arg diff "$DIFF_CONTENT" \
+            '{repo_name: $repo, pr_number: ($pr | tonumber), title: $title, issue_description: $body, raw_diff: $diff}')
+          
+          RESPONSE=$(curl -s -X POST "$ASTRA_API_URL/api/v1/triage/analyze" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+          
+          RISK_TIER=$(echo "$RESPONSE" | jq -r '.risk_tier')
+          if [ "$RISK_TIER" = "HIGH" ]; then
+            echo "::error ::ASTRA Risk Gate Failed: PR classified as HIGH risk defect."
+            exit 1
+          fi</div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="docs-page-footer">
+          <div class="docs-footer-inner">
+            <a href="/landing" class="footer-brand-link" aria-label="ASTRA Home">
+              <img src="/static/docs/logo-name.png" alt="ASTRA" class="footer-logo-name" height="28">
+            </a>
+            <p class="docs-footer-subtext">
+              Abstract Syntax Tree Triage for AI-Agent Pull Requests. Built with Python 3.11+, Tree-sitter C bindings, Sentence-Transformers, and Platt-calibrated XGBoost.
+            </p>
+          </div>
+        </footer>
+
+      </article>
+    </main>
+
+    <!-- Right Sticky Table of Contents -->
+    <aside class="docs-toc">
+      <div class="toc-title">On this page</div>
+      <ul class="toc-list">
+        <li class="toc-item"><a href="#overview">1. System Overview</a></li>
+        <li class="toc-item"><a href="#quickstart">2. Quickstart Guide</a></li>
+        <li class="toc-item"><a href="#auth">3. Authentication</a></li>
+        <li class="toc-item"><a href="#endpoints">4. API Endpoints</a></li>
+        <li class="toc-item" style="padding-left: 10px;"><a href="#endpoint-triage">POST /triage/analyze</a></li>
+        <li class="toc-item" style="padding-left: 10px;"><a href="#endpoint-queue">GET /queue/{repo}</a></li>
+        <li class="toc-item" style="padding-left: 10px;"><a href="#endpoint-stats">GET /stats</a></li>
+        <li class="toc-item" style="padding-left: 10px;"><a href="#endpoint-webhook">POST /github/webhook</a></li>
+        <li class="toc-item" style="padding-left: 10px;"><a href="#endpoint-health">GET /health</a></li>
+        <li class="toc-item"><a href="#concept-features">5. 28-D Feature Matrix</a></li>
+        <li class="toc-item"><a href="#ci-action">6. CI/CD Risk Gate</a></li>
+      </ul>
+    </aside>
+
+  </div>
+
+  <!-- Interactive JavaScript Engine -->
+  <script>
+    // Tab switching for code snippets
+    function switchTab(btn, targetId) {
+      const container = btn.closest('.code-container');
+      container.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
+      container.querySelectorAll('.code-content').forEach(c => c.style.display = 'none');
+      btn.classList.add('active');
+      const target = document.getElementById(targetId);
+      if (target) target.style.display = 'block';
+    }
+
+    // Copy code snippet to clipboard
+    function copySnippet(btn) {
+      const container = btn.closest('.code-container');
+      const activeContent = Array.from(container.querySelectorAll('.code-content')).find(c => c.style.display !== 'none');
+      if (activeContent) {
+        navigator.clipboard.writeText(activeContent.textContent.trim()).then(() => {
+          const original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = original, 2000);
+        });
+      }
+    }
+
+    // Sidebar search filter
+    const searchInput = document.getElementById('doc-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(query) ? 'flex' : 'none';
+        });
+        document.querySelectorAll('.sidebar-group').forEach(group => {
+          const visible = Array.from(group.querySelectorAll('.sidebar-item')).some(i => i.style.display !== 'none');
+          group.style.display = visible ? 'block' : 'none';
+        });
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      });
+    }
+
+    // Active TOC tracking on scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('.docs-section, .endpoint-card');
+      let currentId = '';
+      sections.forEach(sec => {
+        const top = sec.getBoundingClientRect().top;
+        if (top <= 120) currentId = sec.getAttribute('id');
+      });
+      if (currentId) {
+        document.querySelectorAll('.toc-item').forEach(item => {
+          const link = item.querySelector('a');
+          if (link && link.getAttribute('href') === '#' + currentId) {
+            item.classList.add('active');
+          } else {
+            item.classList.remove('active');
+          }
+        });
+      }
+    });
+
+    // Live API Tester: Triage
+    async function executeTriageTest(btn) {
+      const box = document.getElementById('triage-response-box');
+      box.style.display = 'block';
+      box.textContent = 'Sending request to POST /api/v1/triage/analyze...';
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/v1/triage/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repo_name: 'ast-org/demo-service',
+            pr_number: 101,
+            title: 'Fix session timeout handler',
+            issue_description: 'Fix flakiness in timeout handler.',
+            raw_diff: '--- a/session.py\n+++ b/session.py\n@@ -1,2 +1,2 @@\n-def wait(): raise TimeoutError()\n+def wait(): pass',
+            author_login: 'demo-agent[bot]',
+            author_is_bot: true
+          })
+        });
+        const latency = (performance.now() - t0).toFixed(1);
+        const data = await res.json();
+        box.textContent = `HTTP ${res.status} ${res.statusText} (${latency}ms)\n\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        box.textContent = 'Error connecting to API: ' + err.message;
+      }
+    }
+
+    // Live API Tester: Queue
+    async function executeQueueTest(btn) {
+      const box = document.getElementById('queue-response-box');
+      box.style.display = 'block';
+      box.textContent = 'Sending request to GET /api/v1/triage/queue/ast-org/demo-service...';
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/v1/triage/queue/ast-org/demo-service');
+        const latency = (performance.now() - t0).toFixed(1);
+        const data = await res.json();
+        box.textContent = `HTTP ${res.status} ${res.statusText} (${latency}ms)\n\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        box.textContent = 'Error connecting to API: ' + err.message;
+      }
+    }
+
+    // Live API Tester: Stats
+    async function executeStatsTest(btn) {
+      const box = document.getElementById('stats-response-box');
+      box.style.display = 'block';
+      box.textContent = 'Sending request to GET /api/v1/triage/stats...';
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/v1/triage/stats');
+        const latency = (performance.now() - t0).toFixed(1);
+        const data = await res.json();
+        box.textContent = `HTTP ${res.status} ${res.statusText} (${latency}ms)\n\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        box.textContent = 'Error connecting to API: ' + err.message;
+      }
+    }
+
+    // Live API Tester: Health
+    async function executeHealthTest(btn) {
+      const box = document.getElementById('health-response-box');
+      box.style.display = 'block';
+      box.textContent = 'Sending request to GET /api/v1/health...';
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/v1/health');
+        const latency = (performance.now() - t0).toFixed(1);
+        const data = await res.json();
+        box.textContent = `HTTP ${res.status} ${res.statusText} (${latency}ms)\n\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        box.textContent = 'Error connecting to API: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>

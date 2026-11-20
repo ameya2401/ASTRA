@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../assets/logo-name.png" width="240" alt="ASTRA Logo">
+</p>
+
 # AST-Triage Core
 
 **Automated risk-scoring system for AI-agent-generated GitHub Pull Requests.**

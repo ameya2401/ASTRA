@@ -264,6 +264,7 @@ async def persist_triage_record(
         await session.rollback()
 
 
+@router.post("/triage", response_model=TriageResponse)
 @router.post("/triage/analyze", response_model=TriageResponse)
 async def analyze_pull_request(
     payload: PRWebhookPayload,

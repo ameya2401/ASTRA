@@ -6,7 +6,7 @@ triage assessments, SHAP explanations, queue items, and health checks.
 Strictly conforms to Pydantic v2 conventions.
 """
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class SHAPExplanationItem(BaseModel):
@@ -34,6 +34,16 @@ class PRWebhookPayload(BaseModel):
     test churn analysis, and author provenance features.
     """
     model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_aliases(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "title" not in data and "pr_title" in data:
+                data["title"] = data["pr_title"]
+            if "issue_description" not in data:
+                data["issue_description"] = data.get("pr_body") or data.get("body") or data.get("title") or ""
+        return data
 
     repo_name: str = Field(..., description="Repository name in owner/repo format", examples=["django/django"])
     pr_number: int = Field(..., ge=1, description="Pull request number", examples=[101])

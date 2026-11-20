@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASTRA — Automated Risk Stratification for AI Coding Agents</title>
+  <meta name="description" content="Pre-merge gatekeeper for AI coding agents. Concrete Syntax Tree differencing, semantic intent alignment, and Platt-calibrated defect risk scoring with TreeSHAP explanations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar (Geist Nav Chrome) -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/landing" class="nav-brand" aria-label="ASTRA Home">
+        <img src="assets/logo-name.png" alt="ASTRA" class="brand-logo-name" height="28">
+      </a>
+      <nav class="nav-links">
+        <a href="#simulator" class="nav-link">Simulator</a>
+        <a href="#problem" class="nav-link">The CI Mirage</a>
+        <a href="#features" class="nav-link">28-D Matrix</a>
+        <a href="#benchmarks" class="nav-link">Benchmarks</a>
+        <a href="#install" class="nav-link">Installation</a>
+        <a href="/docs" class="nav-link">API Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://github.com/ameya2401/ASTRA" target="_blank" rel="noopener noreferrer" class="btn btn-app-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="#simulator" class="btn btn-app-primary-sm">Launch</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section with Vercel Mesh Gradient Backdrop -->
+  <section class="hero-band">
+    <div class="hero-mesh-background" aria-hidden="true"></div>
+    <div class="container hero-content">
+      <div class="hero-eyebrow-container">
+        <span class="mono-eyebrow">
+          <span class="mono-eyebrow-dot"></span>
+          SWE-bench Verified and AI Agent PR Triage
+        </span>
+      </div>
+
+      <h1 class="display-xl hero-headline">
+        Stop AI Coding Agents From Merging Silent Regressions
+      </h1>
+
+      <p class="hero-subtitle">
+        Devin, Claude Code, and Copilot frequently submit pull requests that pass syntax linters yet quietly delete test assertions or escalate cyclomatic nesting. ASTRA intercepts incoming PRs in under 80ms, evaluating concrete syntax trees and intent alignment before human review begins.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#simulator" class="btn btn-primary">Try Live Simulator</a>
+        <a href="#install" class="btn btn-secondary">Add GitHub Action</a>
+      </div>
+
+      <!-- Hero Spec Card Preview -->
+      <div class="hero-spec-preview">
+        <div class="spec-window-header">
+          <div class="window-dots">
+            <span class="window-dot"></span>
+            <span class="window-dot"></span>
+            <span class="window-dot"></span>
+          </div>
+          <div>ASTRA PR Governance Report Card</div>
+          <span class="window-badge-pill danger">LIVE INTERCEPTION</span>
+        </div>
+
+        <div class="spec-window-body">
+          <div class="spec-summary-banner">
+            <div class="spec-status-indicator">
+              <span class="status-symbol"></span>
+              <div>
+                <div class="status-title">HIGH DEFECT RISK DETECTED</div>
+                <div class="status-caption">Merge blocked pending maintainer audit</div>
+              </div>
+            </div>
+            <div class="spec-metrics-row">
+              <div class="spec-metric-item">
+                <span class="spec-metric-num">98.2%</span>
+                <span class="spec-metric-label">Defect Probability</span>
+              </div>
+              <div class="spec-metric-item">
+                <span class="spec-metric-num">13.1 ms</span>
+                <span class="spec-metric-label">CPU Latency</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-grid-3">
+            <div class="spec-box">
+              <div class="spec-box-header">AST Structural Delta (F01–F12)</div>
+              <div class="spec-row"><span>McCabe Delta (ΔCC):</span> <strong class="text-danger">+14 branches</strong></div>
+              <div class="spec-row"><span>Nesting Depth:</span> <strong class="text-danger">+4 levels</strong></div>
+              <div class="spec-row"><span>AST Disturbance:</span> <strong>0.82 / 1.00</strong></div>
+            </div>
+            <div class="spec-box">
+              <div class="spec-box-header">Semantic Intent (F13–F18)</div>
+              <div class="spec-row"><span>Prompt Cosine:</span> <strong class="text-danger">31.2% (Drift)</strong></div>
+              <div class="spec-row"><span>Entity Jaccard:</span> <strong>78.4% churn</strong></div>
+              <div class="spec-row"><span>Semantic Flag:</span> <strong class="text-danger">FLAGGED</strong></div>
+            </div>
+            <div class="spec-box">
+              <div class="spec-box-header">Test Protection (F19–F23)</div>
+              <div class="spec-row"><span>Assertions Deleted:</span> <strong class="text-danger">6 deleted</strong></div>
+              <div class="spec-row"><span>New Tests Added:</span> <strong>0 lines</strong></div>
+              <div class="spec-row"><span>Safety Override:</span> <strong class="text-danger">Assertion Tampering</strong></div>
+            </div>
+          </div>
+
+          <div class="shap-container">
+            <div class="shap-heading">Top Risk Drivers (TreeSHAP Local Attributions)</div>
+            <div class="shap-factor-row">
+              <div class="shap-meta-row">
+                <span class="shap-name">test_assertions_deleted = 6</span>
+                <span class="shap-val text-danger">+4.88 SHAP</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill rose" style="width: 85%;"></div></div>
+            </div>
+            <div class="shap-factor-row">
+              <div class="shap-meta-row">
+                <span class="shap-name">intent_diff_cosine = 0.31</span>
+                <span class="shap-val text-danger">+2.14 SHAP</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill rose" style="width: 62%;"></div></div>
+            </div>
+            <div class="shap-factor-row">
+              <div class="shap-meta-row">
+                <span class="shap-name">delta_cc = +14</span>
+                <span class="shap-val text-danger">+1.82 SHAP</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill rose" style="width: 50%;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Triage Simulator Section -->
+  <section id="simulator" class="section simulator-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="mono-eyebrow">Playground</span>
+        <h2 class="section-title">Interactive Triage Simulator</h2>
+        <p class="section-subtitle">
+          Test ASTRA in real time. Choose an empirical benchmark scenario from SWE-bench or paste custom pull request diffs to inspect Tree-sitter AST and SHAP attribution.
+        </p>
+      </div>
+
+      <!-- Preset Category Selector -->
+      <div class="scenario-bar">
+        <span class="scenario-prompt-label">Select Empirical Benchmark Scenario:</span>
+        <div class="category-pill-group">
+          <button type="button" class="category-pill active" id="btn-scenario-clean">Clean Refactoring (Django validator)</button>
+          <button type="button" class="category-pill" id="btn-scenario-tamper">Assertion Suppression (OpenHands agent)</button>
+          <button type="button" class="category-pill" id="btn-scenario-drift">Semantic Drift and DB Drop (Payment agent)</button>
+        </div>
+      </div>
+
+      <div class="simulator-workspace">
+        <!-- Input Column -->
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="card-title-eyebrow">PR Specification and Diff</span>
+            <span class="body-sm">Editable input</span>
+          </div>
+
+          <div class="form-group">
+            <label for="sim-title" class="form-label">Pull Request Title</label>
+            <input type="text" id="sim-title" class="text-input" value="UsernameValidator accepts trailing newline in usernames">
+          </div>
+
+          <div class="form-group">
+            <label for="sim-prompt" class="form-label">Issue Description / Prompt</label>
+            <textarea id="sim-prompt" class="textarea-field" rows="3">ASCIIUsernameValidator and UnicodeUsernameValidator accept trailing newline characters in usernames because they use regex anchors ^ and $ instead of \A and \Z.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="sim-diff" class="form-label">Unified Code Diff (Patch)</label>
+            <textarea id="sim-diff" class="textarea-field code-font" rows="8">--- a/django/contrib/auth/validators.py
++++ b/django/contrib/auth/validators.py
+@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
+ @deconstructible
+ class ASCIIUsernameValidator(validators.RegexValidator):
+-    regex = r'^[\w.@+-]+$'
++    regex = r'\A[\w.@+-]+\Z'</textarea>
+          </div>
+
+          <button type="button" id="btn-run-triage" class="btn btn-primary btn-block">
+            <span>Run ASTRA Inspection</span>
+            <span id="sim-spinner" class="spinner" style="display: none;"></span>
+          </button>
+        </div>
+
+        <!-- Output Column -->
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="card-title-eyebrow">Triage Results and Decision</span>
+            <span id="sim-latency-badge" class="body-sm code-font">Latency: 42.1 ms</span>
+          </div>
+
+          <!-- Main Verdict Banner -->
+          <div id="sim-verdict-banner" class="verdict-banner low">
+            <div class="verdict-indicator-group">
+              <span class="verdict-icon" id="sim-verdict-icon">🟢</span>
+              <div>
+                <div class="verdict-heading" id="sim-verdict-title">LOW RISK (APPROVED)</div>
+                <div class="verdict-subtext" id="sim-verdict-desc">Fast-track merge eligible. No test suppression detected.</div>
+              </div>
+            </div>
+            <div class="verdict-gauge-box">
+              <div class="gauge-percentage" id="sim-gauge-val">2.1%</div>
+              <div class="gauge-caption">Defect Prob</div>
+            </div>
+          </div>
+
+          <!-- 3-Pillar Summary Grid -->
+          <div class="sim-pillars-grid">
+            <div class="pillar-box">
+              <div class="pillar-label">McCabe ΔCC</div>
+              <div class="pillar-val" id="sim-stat-cc">0</div>
+              <div class="pillar-sub code-font" id="sim-stat-nesting">Nesting: 0</div>
+            </div>
+            <div class="pillar-box">
+              <div class="pillar-label">Intent Cosine</div>
+              <div class="pillar-val text-success" id="sim-stat-cosine">88.5%</div>
+              <div class="pillar-sub code-font" id="sim-stat-jaccard">Jaccard: 0.22</div>
+            </div>
+            <div class="pillar-box">
+              <div class="pillar-label">Assertions</div>
+              <div class="pillar-val text-success" id="sim-stat-assertions">0 Deleted</div>
+              <div class="pillar-sub code-font" id="sim-stat-testratio">Test Ratio: 1.10</div>
+            </div>
+          </div>
+
+          <!-- Dynamic SHAP Breakdown -->
+          <div class="shap-container">
+            <div class="shap-heading">TreeSHAP Attribution Explanations</div>
+            <div id="sim-shap-list">
+              <!-- Dynamically rendered by app.js -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section: The Green CI Mirage -->
+  <section id="problem" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="mono-eyebrow">Failure Mode Analysis</span>
+        <h2 class="section-title">The "Green CI Mirage" Vulnerability</h2>
+        <p class="section-subtitle">
+          Why standard linters and conventional test suites pass AI pull requests that break production.
+        </p>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="comparison-card">
+          <span class="card-eyebrow-pill">Standard CI &amp; Linters</span>
+          <h3 class="comp-title">The Blind Spots</h3>
+          <ul class="comp-list">
+            <li>
+              <strong>Syntax Linters Only Check Grammar:</strong>
+              An AI agent can introduce deep 6-layer nested logic that confuses human reviewers. Linters mark it clean if indentation matches.
+            </li>
+            <li>
+              <strong>CI Suites Can Be Gamed:</strong>
+              When autonomous agents hit failing unit tests, they frequently delete assertions or add wide mocks so tests pass green.
+            </li>
+            <li>
+              <strong>Raw Line Diffs Are Structure-Blind:</strong>
+              Counting added and deleted lines cannot distinguish safe documentation updates from structural control-flow churn.
+            </li>
+            <li>
+              <strong>Zero Intent Awareness:</strong>
+              Continuous integration systems cannot verify whether modified files match what the developer specified in the issue prompt.
+            </li>
+          </ul>
+        </div>
+
+        <div class="comparison-card highlight">
+          <span class="card-eyebrow-pill active">ASTRA Gatekeeper</span>
+          <h3 class="comp-title">Multi-Modal Defense</h3>
+          <ul class="comp-list">
+            <li>
+              <strong>Tree-sitter Concrete Syntax Differencing:</strong>
+              Parses syntax trees directly, isolating McCabe cyclomatic shifts, nesting changes, and public signature mutations.
+            </li>
+            <li>
+              <strong>Assertion Tampering Shield:</strong>
+              Flags any pull request that deletes test assertions without adding matching unit tests, triggering an instant safety override.
+            </li>
+            <li>
+              <strong>Dense Sentence Embeddings:</strong>
+              Computes intent-to-diff cosine similarity via MiniLM, flagging requirement drift before human reviewers spend hours reading code.
+            </li>
+            <li>
+              <strong>Platt-Calibrated TreeSHAP:</strong>
+              Converts raw gradient boosted logits into continuous defect probabilities alongside localized factor explanations.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 28-D Feature Matrix Section -->
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="mono-eyebrow">Vector Architecture</span>
+        <h2 class="section-title">The 28-Dimensional Feature Matrix</h2>
+        <p class="section-subtitle">
+          ASTRA aggregates 28 features across four specialized dimensions into a normalized tabular vector evaluated by Platt-calibrated gradient boosting.
+        </p>
+      </div>
+
+      <!-- Feature Tabs -->
+      <div class="matrix-tabs-container">
+        <button type="button" class="tab-btn active" data-tab="tab-ast">1. Structural AST (F01–F12)</button>
+        <button type="button" class="tab-btn" data-tab="tab-semantic">2. Semantic Drift (F13–F18)</button>
+        <button type="button" class="tab-btn" data-tab="tab-test">3. Test Protection (F19–F23)</button>
+        <button type="button" class="tab-btn" data-tab="tab-process">4. Provenance (F24–F28)</button>
+      </div>
+
+      <div class="tab-content-area">
+        <!-- Tab 1: AST -->
+        <div id="tab-ast" class="tab-pane active">
+          <div class="feature-table-wrapper">
+            <table class="feature-table">
+              <thead>
+                <tr>
+                  <th>Feature ID</th>
+                  <th>Canonical Name</th>
+                  <th>Analytical Purpose</th>
+                  <th>Detection Mechanism</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>F01–F03</code></td><td><code>nodes_added / deleted / mutated</code></td><td>Syntax tree node churn</td><td>Tree-sitter cursor diffing</td></tr>
+                <tr><td><code>F04</code></td><td><code>delta_cc</code></td><td>McCabe Cyclomatic Complexity delta</td><td>Decision point traversal</td></tr>
+                <tr><td><code>F05</code></td><td><code>nesting_depth_delta</code></td><td>Maximum control block nesting shift</td><td>Block depth hierarchy</td></tr>
+                <tr><td><code>F06–F08</code></td><td><code>signatures / classes / return_types</code></td><td>Public interface modifications</td><td>Declaration parsing</td></tr>
+                <tr><td><code>F09–F10</code></td><td><code>call_graph_fanout / disturbance</code></td><td>Architectural coupling and blast radius</td><td>Caller-callee edge count</td></tr>
+                <tr><td><code>F11–F12</code></td><td><code>try_catch_added / control_flow_churn</code></td><td>Defensive exception masking</td><td>Flow control ratio</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Semantic -->
+        <div id="tab-semantic" class="tab-pane">
+          <div class="feature-table-wrapper">
+            <table class="feature-table">
+              <thead>
+                <tr>
+                  <th>Feature ID</th>
+                  <th>Canonical Name</th>
+                  <th>Analytical Purpose</th>
+                  <th>Detection Mechanism</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>F13</code></td><td><code>intent_diff_cosine</code></td><td>Issue specification alignment</td><td>MiniLM 384-D vector cosine</td></tr>
+                <tr><td><code>F14</code></td><td><code>title_diff_cosine</code></td><td>PR title to diff summary alignment</td><td>Fallback semantic cosine</td></tr>
+                <tr><td><code>F15</code></td><td><code>entity_drift_jaccard</code></td><td>Code identifier entity churn</td><td>Token set Jaccard distance</td></tr>
+                <tr><td><code>F16</code></td><td><code>docstring_code_ratio</code></td><td>Comments vs code additions</td><td>Comment-to-code line ratio</td></tr>
+                <tr><td><code>F17</code></td><td><code>semantic_drift_flag</code></td><td>Binary prompt divergence indicator</td><td>Threshold check (&lt; 0.45)</td></tr>
+                <tr><td><code>F18</code></td><td><code>issue_token_length</code></td><td>Prompt complexity and detail level</td><td>Normalized token counter</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 3: Test Protection -->
+        <div id="tab-test" class="tab-pane">
+          <div class="feature-table-wrapper">
+            <table class="feature-table">
+              <thead>
+                <tr>
+                  <th>Feature ID</th>
+                  <th>Canonical Name</th>
+                  <th>Analytical Purpose</th>
+                  <th>Detection Mechanism</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>F19</code></td><td><code>test_files_modified</code></td><td>Verification file touch count</td><td>Path pattern matcher</td></tr>
+                <tr><td><code>F20</code></td><td><code>test_ast_nodes_added</code></td><td>Test coverage additions</td><td>Test tree AST node count</td></tr>
+                <tr><td><code>F21</code></td><td><code>assertions_deleted</code></td><td>Assertion circumvention detection</td><td>Assert statement subtraction</td></tr>
+                <tr><td><code>F22</code></td><td><code>test_to_logic_ratio</code></td><td>Test vs code modification balance</td><td>Added test to logic lines</td></tr>
+                <tr><td><code>F23</code></td><td><code>mock_patch_count_delta</code></td><td>Mock abuse and isolation bypass</td><td>unittest.mock / patch calls</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 4: Process -->
+        <div id="tab-process" class="tab-pane">
+          <div class="feature-table-wrapper">
+            <table class="feature-table">
+              <thead>
+                <tr>
+                  <th>Feature ID</th>
+                  <th>Canonical Name</th>
+                  <th>Analytical Purpose</th>
+                  <th>Detection Mechanism</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>F24</code></td><td><code>commit_count</code></td><td>PR change granularity</td><td>Git commit history count</td></tr>
+                <tr><td><code>F25</code></td><td><code>files_touched_count</code></td><td>Total files impacted</td><td>Diff file header count</td></tr>
+                <tr><td><code>F26</code></td><td><code>dispersion_entropy</code></td><td>Scatter across directories</td><td>Shannon file churn entropy</td></tr>
+                <tr><td><code>F27</code></td><td><code>ci_pass_flag</code></td><td>Pre-review CI pipeline state</td><td>GitHub status check outcome</td></tr>
+                <tr><td><code>F28</code></td><td><code>is_known_agent_bot</code></td><td>Agent vs human provenance</td><td>Bot login fingerprinting</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empirical Benchmarks Section -->
+  <section id="benchmarks" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="mono-eyebrow">Empirical Evaluation</span>
+        <h2 class="section-title">SWE-bench and Agent Benchmark Results</h2>
+        <p class="section-subtitle">
+          5-Fold Stratified Cross-Validation on curated SWE-bench tasks and real-world agent failure archetypes.
+        </p>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-big">1.000</div>
+          <div class="metric-title">ROC-AUC Score</div>
+          <div class="metric-desc">High ranking discrimination on structural and intent drift defects.</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-big">0.0004</div>
+          <div class="metric-title">Brier Calibration</div>
+          <div class="metric-desc">Platt scaling guarantees continuous, statistically reliable probabilities.</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-big">&lt; 80 ms</div>
+          <div class="metric-title">Inference Latency</div>
+          <div class="metric-desc">Full 28-D vector calculation on CPU without requiring GPU instances.</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-big">103 / 103</div>
+          <div class="metric-title">Automated Tests</div>
+          <div class="metric-desc">Full verified test coverage across AST, Semantic, and ML engines.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1-Minute GitHub Installation Section -->
+  <section id="install" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="mono-eyebrow">Integration</span>
+        <h2 class="section-title">Add ASTRA To Your Repository</h2>
+        <p class="section-subtitle">
+          Enable automated PR risk gating in two minutes with zero server infrastructure.
+        </p>
+      </div>
+
+      <div class="install-card">
+        <div class="install-card-header">
+          <span class="install-file-name">.github/workflows/astra-gate.yml</span>
+          <button type="button" id="btn-copy-yaml" class="btn btn-app-sm">
+            <span id="copy-text">Copy Workflow YAML</span>
+          </button>
+        </div>
+        <pre class="install-code-pre"><code id="yaml-code">name: ASTRA Risk Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  triage:
+    name: ASTRA AI-PR Risk Triage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run ASTRA Triage
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.patch
+          python3 -c "
+          import json, os, urllib.request, sys
+          payload = {
+              'repo_name': '${{ github.repository }}',
+              'pr_number': ${{ github.event.pull_request.number }},
+              'pr_title': '${{ github.event.pull_request.title }}',
+              'pr_body': '${{ github.event.pull_request.body || \'\' }}',
+              'raw_diff': open('pr_diff.patch', 'r', errors='ignore').read(),
+              'author_login': '${{ github.actor }}'
+          }
+          req = urllib.request.Request(
+              'https://astra-08bw.onrender.com/api/v1/triage',
+              data=json.dumps(payload).encode('utf-8'),
+              headers={'Content-Type': 'application/json'}
+          )
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              res = json.loads(resp.read().decode('utf-8'))
+          print(f'ASTRA Verdict: {res[\"risk_tier\"]} ({res[\"risk_probability\"]:.1%})')
+          if res.get('risk_tier') == 'HIGH' and res.get('risk_probability', 0) >= 0.65:
+              sys.exit(1)
+          "</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer (Geist Minimal Multi-Column Footer) -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>
+        <a href="/landing" class="footer-brand-link" aria-label="ASTRA Home">
+          <img src="assets/logo-name.png" alt="ASTRA" class="footer-logo-name" height="28">
+        </a>
+        <p class="footer-subtext">
+          Abstract Syntax Tree Triage for AI-Agent Pull Requests. Built with Python 3.11+, Tree-sitter C bindings, Sentence-Transformers, and Platt-calibrated XGBoost.
+        </p>
+      </div>
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <div class="footer-col-title">Resources</div>
+          <a href="https://github.com/ameya2401/ASTRA" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+          <a href="/docs" target="_blank" rel="noopener noreferrer">FastAPI Swagger Docs</a>
+          <a href="/api/v1/health" target="_blank" rel="noopener noreferrer">API Health Status</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Live Verifications</div>
+          <a href="https://github.com/ameya2401/ASTRA/pull/9" target="_blank" rel="noopener noreferrer">PR #9 (Low Risk Approved)</a>
+          <a href="https://github.com/ameya2401/ASTRA/pull/8" target="_blank" rel="noopener noreferrer">PR #8 (High Risk Blocked)</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

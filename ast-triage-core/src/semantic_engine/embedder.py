@@ -47,7 +47,10 @@ class SentenceEmbedder:
                 chosen_name = model_name or getattr(settings, "EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
                 logger.info("Initializing SentenceEmbedder singleton with model: %s", chosen_name)
                 instance.model_name = chosen_name
-                instance.model = SentenceTransformer(chosen_name)
+                try:
+                    instance.model = SentenceTransformer(chosen_name, local_files_only=True)
+                except Exception:
+                    instance.model = SentenceTransformer(chosen_name)
                 cls._instance = instance
             elif model_name is not None and model_name != cls._instance.model_name:
                 logger.warning(

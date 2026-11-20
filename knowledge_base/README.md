@@ -31,7 +31,8 @@ knowledge_base/
 ├── ml_and_scoring/                 # Machine learning, calibration, and explainability
 │   ├── risk_stratification.md      # Triage policy: GREEN, YELLOW, and RED risk tiers
 │   ├── model_pipeline.md           # XGBoost training, Platt calibration, and imbalance handling
-│   └── explainability_shap.md      # TreeSHAP feature attributions and PR explanation generation
+│   ├── explainability_shap.md      # TreeSHAP feature attributions and PR explanation generation
+│   └── dataset_mining_and_ablation.md # SWE-bench benchmarks, agent failure archetypes, and ablation
 │
 ├── pipeline_and_storage/           # Persistence, async connections, and vector preparation
 │   ├── storage_layer.md            # SQLAlchemy 2.0 async engine and session management
@@ -39,7 +40,9 @@ knowledge_base/
 │
 └── operations_and_guides/          # Engineering standards, testing, and verification
     ├── verification_gates.md       # Mandatory validation gates and testing commands
-    └── developer_standards.md      # Repo conventions: error-tolerant parsing and writing style
+    ├── developer_standards.md      # Repo conventions: error-tolerant parsing and writing style
+    ├── production_gating_and_landing_page.md # GitHub Actions CI gate and landing page simulator
+    └── review_2_presentation_script.md # Academic presentation script and evaluation defense
 ```
 
 ---
@@ -54,6 +57,8 @@ knowledge_base/
 | **28-D Feature Vector** | A unified numerical representation capturing code structure, semantic intent, test churn, and process provenance. | [feature_taxonomy.md](file:///e:/study/ASTRA/knowledge_base/features/feature_taxonomy.md) |
 | **Platt Calibration** | Logistic sigmoid scaling fitted via cross-validation to turn raw boosting margins into true posterior probabilities. | [model_pipeline.md](file:///e:/study/ASTRA/knowledge_base/ml_and_scoring/model_pipeline.md) |
 | **Local SHAP Explanations** | Computes exact marginal contributions of each feature to the final risk score so human reviewers see why a PR was flagged. | [explainability_shap.md](file:///e:/study/ASTRA/knowledge_base/ml_and_scoring/explainability_shap.md) |
+| **SWE-bench & Ablation** | Mined real SWE-bench patches and agent failure archetypes evaluated via 5-fold cross-validation across all modalities. | [dataset_mining_and_ablation.md](file:///e:/study/ASTRA/knowledge_base/ml_and_scoring/dataset_mining_and_ablation.md) |
+| **CI Risk Gate & Showcase** | GitHub Actions workflow that blocks high-risk agent PR merges paired with an interactive browser simulator. | [production_gating_and_landing_page.md](file:///e:/study/ASTRA/knowledge_base/operations_and_guides/production_gating_and_landing_page.md) |
 
 ---
 

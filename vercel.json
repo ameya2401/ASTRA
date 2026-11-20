@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/landing/(.*)",
+      "destination": "/landing_page/$1"
+    },
+    {
+      "source": "/",
+      "destination": "/landing_page/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/landing_page/$1"
+    }
+  ]
+}

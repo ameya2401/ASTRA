@@ -135,14 +135,25 @@ def run_demo_predictions(predictor: RiskPredictor) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="AST-Triage Model Trainer & Evaluator")
-    parser.add_argument("--n-samples", type=int, default=500, help="Number of synthetic samples")
+    parser.add_argument("--data-csv", type=str, default="data/processed/agent_prs_dataset.csv", help="Path to mined PR CSV dataset")
+    parser.add_argument("--n-samples", type=int, default=500, help="Fallback synthetic sample size if CSV not present")
     parser.add_argument("--save-dir", type=str, default="models", help="Artifact checkpoint directory")
     parser.add_argument("--demo-predict", action="store_true", help="Run sample prediction demonstration")
     args = parser.parse_args()
 
-    print(f"Generating {args.n_samples} synthetic pull request feature records...")
-    X, y = generate_synthetic_pr_dataset(n_samples=args.n_samples, defect_ratio=0.20, random_state=42)
-    print(f"Dataset shape: X={X.shape}, y={y.shape} (Defective rate: {np.mean(y):.2%})")
+    csv_path = BASE_DIR / args.data_csv if not Path(args.data_csv).is_absolute() else Path(args.data_csv)
+
+    if csv_path.exists():
+        print(f"Loading mined dataset from: {csv_path}")
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        X = df[FEATURE_NAMES].values.astype(np.float32)
+        y = df["label"].values.astype(int)
+        print(f"Loaded dataset: X={X.shape}, y={y.shape} (Defective rate: {np.mean(y):.2%})")
+    else:
+        print(f"Dataset CSV not found at {csv_path}. Generating {args.n_samples} synthetic pull request feature records...")
+        X, y = generate_synthetic_pr_dataset(n_samples=args.n_samples, defect_ratio=0.20, random_state=42)
+        print(f"Dataset shape: X={X.shape}, y={y.shape} (Defective rate: {np.mean(y):.2%})")
 
     print(f"Training Platt-calibrated XGBoost classifier (5-fold CV) and fitting TreeSHAP explainer...")
     train_calibrated_triage_model(X, y, save_dir=args.save_dir, random_state=42)
