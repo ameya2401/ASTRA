@@ -1,0 +1,11 @@
+ast-triage-core/
+scripts/
+tests/
+knowledge_base/
+thesis/
+project_dump/
+survey_assets/
+.github/
+requirements.txt
+setup.py
+pyproject.toml
