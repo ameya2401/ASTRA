@@ -4,7 +4,7 @@ src/feature_pipeline/normalizer.py - Feature scaling, clipping, and imputation.
 Ensures that all 28-D input vectors are numerically stable, within physiological bounds,
 and free of NaNs, Infs, or malformed data before feeding into the ML classifier.
 """
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 import numpy as np
 
 # Physiological / algorithmic bounds for all 28 features (F01 - F28)

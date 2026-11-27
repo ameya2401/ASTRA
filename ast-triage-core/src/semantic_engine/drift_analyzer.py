@@ -11,15 +11,13 @@ Computes semantic alignment between issue descriptions and code diffs:
 
 Implementation: Phase 3
 """
-from __future__ import annotations
-
 import logging
 import re
 from typing import Optional, Set, Tuple, TypedDict
 
 import numpy as np
 
-from src.semantic_engine.embedder import SentenceEmbedder, get_embedder
+from src.semantic_engine.embedder import SentenceEmbedder
 
 logger = logging.getLogger(__name__)
 

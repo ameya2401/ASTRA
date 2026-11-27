@@ -42,7 +42,8 @@ knowledge_base/
     ├── verification_gates.md       # Mandatory validation gates and testing commands
     ├── developer_standards.md      # Repo conventions: error-tolerant parsing and writing style
     ├── production_gating_and_landing_page.md # GitHub Actions CI gate and landing page simulator
-    └── review_2_presentation_script.md # Academic presentation script and evaluation defense
+    ├── review_2_presentation_script.md # Academic presentation script and evaluation defense
+    └── thesis_report_architecture.md # Master chapter map, dissertation audit, and benchmark ledger
 ```
 
 ---

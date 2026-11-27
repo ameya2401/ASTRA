@@ -27,7 +27,7 @@ from src.api.schemas import (
     TriageResponse,
     TriageStatsResponse,
 )
-from src.ast_engine.differ import ASTMetrics, diff_multi_file, extract_diff_code_hotspots
+from src.ast_engine.differ import diff_multi_file, extract_diff_code_hotspots
 from src.feature_pipeline.normalizer import clip_feature_bounds, impute_missing_values
 from src.feature_pipeline.vector_builder import (
     build_feature_vector,
@@ -98,35 +98,67 @@ def parse_diff_into_files(raw_diff: str) -> List[Dict[str, Any]]:
         if file_diffs:
             return file_diffs
 
-    # Fallback for single unified diff without git headers
-    base_lines = []
-    head_lines = []
-    has_diff_markers = False
-    for line in raw_diff.splitlines():
-        if line.startswith(("--- ", "+++ ", "@@")):
-            has_diff_markers = True
-            continue
-        if line.startswith("-"):
-            base_lines.append(line[1:])
-            has_diff_markers = True
-        elif line.startswith("+"):
-            head_lines.append(line[1:])
-            has_diff_markers = True
-        elif line.startswith(" "):
-            base_lines.append(line[1:])
-            head_lines.append(line[1:])
-        else:
-            base_lines.append(line)
-            head_lines.append(line)
-
+    # Fallback for unified diffs without "diff --git" headers (supports multi-file "--- a/..." blocks)
+    lines = raw_diff.splitlines()
+    has_diff_markers = any(line.startswith(("--- ", "+++ ", "@@", "+", "-")) for line in lines)
     if has_diff_markers:
-        return [{
-            "base_code": "\n".join(base_lines),
-            "head_code": "\n".join(head_lines),
-        }]
+        file_diffs = []
+        current_path = "diff"
+        base_lines = []
+        head_lines = []
+        seen_content = False
+
+        for line in lines:
+            if line.startswith("--- "):
+                if seen_content and (base_lines or head_lines):
+                    file_diffs.append({
+                        "file_path": current_path,
+                        "base_code": "\n".join(base_lines),
+                        "head_code": "\n".join(head_lines),
+                    })
+                    base_lines = []
+                    head_lines = []
+                candidate = line[4:].strip().split("\t")[0]
+                if candidate.startswith("a/"):
+                    candidate = candidate[2:]
+                if candidate != "/dev/null":
+                    current_path = candidate
+                seen_content = True
+                continue
+            if line.startswith("+++ "):
+                candidate = line[4:].strip().split("\t")[0]
+                if candidate.startswith("b/"):
+                    candidate = candidate[2:]
+                if candidate != "/dev/null":
+                    current_path = candidate
+                seen_content = True
+                continue
+            if line.startswith("@@"):
+                seen_content = True
+                continue
+            if line.startswith("-"):
+                base_lines.append(line[1:])
+                seen_content = True
+            elif line.startswith("+"):
+                head_lines.append(line[1:])
+                seen_content = True
+            elif line.startswith(" "):
+                base_lines.append(line[1:])
+                head_lines.append(line[1:])
+            else:
+                base_lines.append(line)
+                head_lines.append(line)
+
+        if base_lines or head_lines or not file_diffs:
+            file_diffs.append({
+                "file_path": current_path,
+                "base_code": "\n".join(base_lines),
+                "head_code": "\n".join(head_lines),
+            })
+        return file_diffs
 
     # Plain code snippet treated as head code with empty base
-    return [{"base_code": "", "head_code": raw_diff}]
+    return [{"file_path": "diff", "base_code": "", "head_code": raw_diff}]
 
 
 async def persist_triage_record(
@@ -297,6 +329,21 @@ async def analyze_pull_request(
             issue_title=payload.title,
         )
 
+        # Derive files_touched and per-file churns from parsed diffs when omitted
+        derived_files = payload.files_touched
+        derived_churns = payload.file_churns
+        if derived_files is None:
+            derived_files = [
+                fd.get("file_path") or f"file_{idx}"
+                for idx, fd in enumerate(file_diffs)
+            ]
+        if derived_churns is None:
+            derived_churns = []
+            for fd in file_diffs:
+                base_cnt = len(fd.get("base_code", "").splitlines())
+                head_cnt = len(fd.get("head_code", "").splitlines())
+                derived_churns.append(max(1, abs(head_cnt - base_cnt) + min(base_cnt, head_cnt)))
+
         # 3. Test Churn & Process Features (F19-F28)
         test_result = extract_test_metrics(
             raw_diff=payload.raw_diff,
@@ -304,8 +351,8 @@ async def analyze_pull_request(
         )
         process_result = extract_process_metrics(
             commit_count=payload.commit_count or 1,
-            files_touched=payload.files_touched,
-            file_churns=payload.file_churns,
+            files_touched=derived_files,
+            file_churns=derived_churns,
             ci_passed=payload.ci_passed,
             author_is_bot=payload.author_is_bot,
             author_login=payload.author_login,
@@ -346,9 +393,9 @@ async def analyze_pull_request(
                     if h.get("metric_name") == feat_name or feat_name in ("delta_cc", "nodes_added"):
                         matched_hotspot = h.get("location_str")
                         break
-            elif feat_name in ("intent_diff_cosine", "title_diff_cosine", "semantic_drift_flag"):
+            elif feat_name in ("intent_diff_cosine", "title_diff_cosine", "semantic_drift_flag", "entity_drift_jaccard"):
                 matched_hotspot = "PR Title & Description"
-            elif feat_name in ("test_to_logic_ratio", "assertions_deleted", "test_ast_nodes_added"):
+            elif feat_name in ("test_to_logic_ratio", "assertions_deleted", "test_ast_nodes_added", "test_files_modified", "mock_patch_count_delta"):
                 matched_hotspot = "Test Suite Files"
             elif feat_name in ("commit_count", "files_touched_count", "dispersion_entropy", "is_known_agent_bot"):
                 matched_hotspot = "Git Provenance"
@@ -373,7 +420,7 @@ async def analyze_pull_request(
             "semantic_drift_flag": int(semantic_result.get("semantic_drift_flag", 0)),
             "entity_drift_jaccard": round(float(semantic_result.get("entity_drift_jaccard", 0.0)), 4),
             "test_to_logic_ratio": round(float(test_result.get("test_to_logic_ratio", 0.0)), 4),
-            "assertions_deleted": int(test_result.get("test_assertions_deleted", 0)),
+            "assertions_deleted": int(test_result.get("assertions_deleted", test_result.get("test_assertions_deleted", 0))),
             "test_ast_nodes_added": int(test_result.get("test_ast_nodes_added", 0)),
             "delta_cc": int(ast_result.get("delta_cc", 0)),
             "nesting_depth_delta": int(ast_result.get("nesting_depth_delta", 0)),

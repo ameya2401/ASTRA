@@ -6,7 +6,7 @@ via CalibratedClassifierCV(method='sigmoid', cv=5) to guarantee calibrated proba
 fits a SHAP TreeExplainer for local feature attributions, and persists serialized checkpoints.
 """
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 import joblib
 import numpy as np
 from sklearn.calibration import CalibratedClassifierCV

@@ -15,7 +15,7 @@
   --color-hairline-soft: #f2f2f2;
   --color-canvas: #fafafa;
   --color-canvas-elevated: #ffffff;
-  --color-link: #0070f3;
+  --color-link: #111827;
   --color-error: #ee0000;
   --color-success: #059669;
   --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -350,7 +350,7 @@ body {
 .swagger-ui select:focus,
 .swagger-ui textarea:focus {
   border-color: var(--color-link) !important;
-  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.15) !important;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.15) !important;
 }
 
 /* Code, Responses & Terminal Samples */
@@ -416,5 +416,5 @@ body {
 }
 
 .swagger-ui .prop-type {
-  color: #0070f3 !important;
+  color: #111827 !important;
 }

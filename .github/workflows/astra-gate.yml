@@ -68,26 +68,31 @@ jobs:
           risk_tier = res.get('risk_tier', 'LOW')
           prob = res.get('risk_probability', 0.0)
           latency = res.get('latency_ms', 0.0)
-          shap_features = res.get('top_shap_features', [])
-          hotspots = res.get('ast_code_hotspots', [])
+          override = res.get('override_applied')
+          shap_drivers = res.get('top_risk_drivers', [])
+          hotspots = res.get('code_hotspots', [])
 
           # Write GitHub Step Summary
           summary_file = os.environ.get('GITHUB_STEP_SUMMARY')
           if summary_file:
               with open(summary_file, 'a', encoding='utf-8') as sf:
-                  badge_color = 'red' if risk_tier == 'HIGH' else ('yellow' if risk_tier == 'MEDIUM' else 'green')
                   sf.write(f'# ASTRA Risk Gate: {risk_tier} RISK\\n\\n')
                   sf.write(f'- **Calibrated Risk Probability:** `{prob:.2%}`\\n')
-                  sf.write(f'- **Inference Latency:** `{latency:.2f} ms`\\n\\n')
-                  if shap_features:
+                  sf.write(f'- **Inference Latency:** `{latency:.2f} ms`\\n')
+                  if override:
+                      sf.write(f'- **Safety Override:** `{override}`\\n')
+                  sf.write('\\n')
+                  if shap_drivers:
                       sf.write('### Top Risk Contributors (Local SHAP Attribution)\\n')
-                      for f in shap_features:
-                          sf.write(f'- `{f}`\\n')
+                      for d in shap_drivers:
+                          desc = d.get('description') or d.get('feature_name', '')
+                          sf.write(f'- `{desc}`\\n')
                       sf.write('\\n')
                   if hotspots:
                       sf.write('### Detected AST Churn Hotspots\\n')
                       for h in hotspots[:5]:
-                          sf.write(f'- `{h.get(\"file_path\", \"\")}:{h.get(\"name\", \"\")}` (Delta CC: `+{h.get(\"delta_cc\", 0)}`)\\n')
+                          loc = h.get('location_str') or f\"{h.get('file_path', '')}:{h.get('symbol_name', '')}\"
+                          sf.write(f'- {loc} (Delta CC: `+{h.get(\"delta_cc\", 0)}`)\\n')
 
           print(f'ASTRA Triage Result: {risk_tier} ({prob:.2%})')
 

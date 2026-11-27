@@ -5,7 +5,7 @@ Formats triage assessments into structured markdown comments containing
 SVG status badges, plain-English breakdowns, calibrated risk percentages,
 collapsible SHAP feature attributions, and actionable recommendations.
 """
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 from src.api.schemas import TriageResponse
 
 
@@ -221,11 +221,17 @@ def _build_decision_rationale(triage: TriageResponse) -> List[str]:
     prob_pct = round(triage.risk_probability * 100.0, 1)
 
     if tier == "HIGH":
-        rationale = (
-            f"ASTRA classified this PR as **HIGH RISK** ({prob_pct}% defect probability) because Tree-sitter detected "
-            "elevated structural disturbance or deep block nesting in modified logic without accompanying unit test coverage. "
-            "The Platt-calibrated XGBoost model assigned elevated defect risk based on marginal TreeSHAP feature attributions."
-        )
+        if triage.override_applied:
+            rationale = (
+                f"ASTRA classified this PR as **HIGH RISK** (calibrated model score: {prob_pct}%, escalated via safety override: {triage.override_applied}). "
+                "Deterministic policy guardrails override continuous probability thresholds whenever prompt divergence, test assertion tampering, or severe disturbance with failing CI is detected."
+            )
+        else:
+            rationale = (
+                f"ASTRA classified this PR as **HIGH RISK** ({prob_pct}% defect probability) because Tree-sitter detected "
+                "elevated structural disturbance or deep block nesting in modified logic without accompanying unit test coverage. "
+                "The Platt-calibrated XGBoost model assigned elevated defect risk based on marginal TreeSHAP feature attributions."
+            )
     elif tier == "MEDIUM":
         rationale = (
             f"ASTRA classified this PR as **MEDIUM RISK** ({prob_pct}% defect probability). While the core intent is aligned with "

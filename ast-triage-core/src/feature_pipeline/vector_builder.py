@@ -6,7 +6,7 @@ and process provenance metrics (F24-F28) into a structured NumPy vector for XGBo
 """
 import math
 import re
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 
 
@@ -140,17 +140,34 @@ def extract_test_metrics(
     mock_patch_count_delta = 0
 
     is_in_test_file = False
-    file_header_pattern = re.compile(r"^diff --git a/(\S+) b/(\S+)")
+    seen_test_files: set[str] = set()
+    git_header_pattern = re.compile(r"^diff --git a/(\S+) b/(\S+)")
+    unified_header_pattern = re.compile(r"^\+\+\+ (?:b/)?(\S+)")
 
     for line in raw_diff.splitlines():
-        match = file_header_pattern.match(line)
-        if match:
-            filepath = match.group(2).lower()
+        git_match = git_header_pattern.match(line)
+        if git_match:
+            filepath = git_match.group(2).lower()
             if "test" in filepath or "tests" in filepath:
-                test_files_modified += 1
+                if filepath not in seen_test_files:
+                    seen_test_files.add(filepath)
+                    test_files_modified += 1
                 is_in_test_file = True
             else:
                 is_in_test_file = False
+            continue
+
+        unified_match = unified_header_pattern.match(line)
+        if unified_match:
+            filepath = unified_match.group(1).lower()
+            if filepath != "/dev/null":
+                if "test" in filepath or "tests" in filepath:
+                    if filepath not in seen_test_files:
+                        seen_test_files.add(filepath)
+                        test_files_modified += 1
+                    is_in_test_file = True
+                else:
+                    is_in_test_file = False
             continue
 
         if line.startswith("+") and not line.startswith("+++"):
@@ -164,7 +181,13 @@ def extract_test_metrics(
                 mock_patch_count_delta += 1
 
         elif line.startswith("-") and not line.startswith("---"):
-            if is_in_test_file and "assert " in line:
+            stripped_del = line[1:].lstrip()
+            if is_in_test_file and (
+                "assert " in line
+                or stripped_del.startswith("assert(")
+                or "self.assert" in line
+                or "pytest.raises" in line
+            ):
                 assertions_deleted += 1
 
     # Approximate AST nodes added if AST metrics provided

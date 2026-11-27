@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASTRA Documentation — API Reference & Integration Guide</title>
+  <title>ASTRA Documentation - API Reference &amp; Integration Guide</title>
   <meta name="description" content="Official documentation for ASTRA: AST-Triage, Semantic Intent Drift, and TreeSHAP risk stratification for AI coding agents.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/static/docs/favicon.png">
-  <link rel="stylesheet" href="/static/docs/docs.css">
+  <link rel="stylesheet" href="/static/docs/docs.css?v=2">
 </head>
 <body>
 
@@ -80,8 +80,8 @@
       <div class="sidebar-group">
         <div class="sidebar-group-title">Core Architecture</div>
         <a href="#concept-features" class="sidebar-item">28-D Feature Matrix</a>
-        <a href="#concept-ast" class="sidebar-item">AST Differencing (F01–F12)</a>
-        <a href="#concept-semantic" class="sidebar-item">Semantic Intent (F13–F18)</a>
+        <a href="#concept-ast" class="sidebar-item">AST Differencing (F01-F12)</a>
+        <a href="#concept-semantic" class="sidebar-item">Semantic Intent (F13-F18)</a>
         <a href="#concept-shap" class="sidebar-item">TreeSHAP Explainability</a>
       </div>
 
@@ -118,9 +118,9 @@
           </p>
 
           <div class="docs-callout callout-tip">
-            <span class="callout-icon">💡</span>
+            <span class="callout-icon">Note:</span>
             <div>
-              <strong>Sub-300ms Inference SLA:</strong> All neural sentence embeddings (`all-MiniLM-L6-v2`) and Platt-calibrated XGBoost model checkpoints are pre-warmed as thread-safe singletons at application startup.
+              <strong>Sub-300ms Inference SLA:</strong> All neural sentence embeddings (<code>all-MiniLM-L6-v2</code>) and Platt-calibrated XGBoost model checkpoints are pre-warmed as thread-safe singletons at application startup.
             </div>
           </div>
         </section>
@@ -188,7 +188,7 @@ console.log(data);</div>
         <section id="auth" class="docs-section">
           <h2 class="docs-section-heading">3. Authentication & Security</h2>
           <p>
-            When integrating with GitHub Apps or webhooks, ASTRA authenticates incoming requests using HMAC SHA-256 signatures passed in the `X-Hub-Signature-256` header. For local development or internal service-to-service calls, standard JSON REST requests require no authentication.
+            When integrating with GitHub Apps or webhooks, ASTRA authenticates incoming requests using HMAC SHA-256 signatures passed in the <code>X-Hub-Signature-256</code> header. For local development or internal service-to-service calls, standard JSON REST requests require no authentication.
           </p>
         </section>
 
@@ -207,7 +207,7 @@ console.log(data);</div>
             </div>
             <div class="endpoint-body">
               <p class="endpoint-desc">
-                Ingests a pull request's unified diff, title, prompt specification, and provenance data. Computes concrete syntax tree deltas, semantic intent drift, and returns calibrated defect probability, risk tier (`LOW`, `MEDIUM`, `HIGH`), and local TreeSHAP attribution drivers.
+                Ingests a pull request's unified diff, title, prompt specification, and provenance data. Computes concrete syntax tree deltas, semantic intent drift, and returns calibrated defect probability, risk tier (<code>LOW</code>, <code>MEDIUM</code>, <code>HIGH</code>), and local TreeSHAP attribution drivers.
               </p>
 
               <!-- Request Body Table -->
@@ -226,7 +226,7 @@ console.log(data);</div>
                       <td><span class="param-name">repo_name</span></td>
                       <td><span class="param-type">string</span></td>
                       <td><span class="param-req">required</span></td>
-                      <td>GitHub repository in `owner/repo` format.</td>
+                      <td>GitHub repository in <code>owner/repo</code> format.</td>
                     </tr>
                     <tr>
                       <td><span class="param-name">pr_number</span></td>
@@ -256,7 +256,7 @@ console.log(data);</div>
                       <td><span class="param-name">author_login</span></td>
                       <td><span class="param-type">string</span></td>
                       <td><span class="param-opt">optional</span></td>
-                      <td>GitHub login of the PR author (e.g. `devin-ai-integration[bot]`).</td>
+                      <td>GitHub login of the PR author (e.g. <code>devin-ai-integration[bot]</code>).</td>
                     </tr>
                     <tr>
                       <td><span class="param-name">author_is_bot</span></td>
@@ -295,7 +295,7 @@ console.log(data);</div>
             </div>
             <div class="endpoint-body">
               <p class="endpoint-desc">
-                Retrieves the review queue for a repository sorted by defect risk score descending. Allows maintainers to prioritize high-risk pull requests requiring manual scrutiny before approving safe refactors.
+                Retrieves the review queue for a repository sorted by defect risk score ascending by default (<code>sort_by=risk_asc</code>) for fast-tracking safe patches, or descending (<code>sort_by=risk_desc</code>) to surface high-risk submissions first.
               </p>
 
               <!-- Interactive Live Console -->
@@ -355,7 +355,7 @@ console.log(data);</div>
             </div>
             <div class="endpoint-body">
               <p class="endpoint-desc">
-                Receives native GitHub webhook `pull_request` payloads. Verifies webhook HMAC signature, fetches unified diff, runs AST risk classification, and posts an automated governance comment on the pull request.
+                Receives native GitHub webhook <code>pull_request</code> payloads. Verifies webhook HMAC signature, fetches unified diff, runs AST risk classification, and posts an automated governance comment on the pull request.
               </p>
             </div>
           </div>
@@ -411,23 +411,23 @@ console.log(data);</div>
               <tbody>
                 <tr>
                   <td><strong>AST Structural Churn</strong></td>
-                  <td><code>F01–F12</code></td>
+                  <td><code>F01-F12</code></td>
                   <td>Tree-sitter node churn, cyclomatic delta (&Delta;CC), max nesting depth delta, call graph fan-out delta, disturbance index.</td>
                 </tr>
                 <tr>
                   <td><strong>NLP Semantic Intent Drift</strong></td>
-                  <td><code>F13–F18</code></td>
+                  <td><code>F13-F18</code></td>
                   <td>MiniLM cosine distance between issue prompt and code diff, entity drift Jaccard, docstring-to-code churn ratio.</td>
                 </tr>
                 <tr>
-                  <td><strong>Test Protection & Tampering</strong></td>
-                  <td><code>F19–F23</code></td>
-                  <td>Deleted assertion count, test-to-logic ratio, test AST nodes added, mock/patch count delta.</td>
+                  <td><strong>Test Protection &amp; Tampering</strong></td>
+                  <td><code>F19-F23</code></td>
+                  <td>Test files modified, test AST nodes added, deleted assertion count, test-to-logic ratio, mock/patch count delta.</td>
                 </tr>
                 <tr>
-                  <td><strong>Process & Provenance</strong></td>
-                  <td><code>F24–F28</code></td>
-                  <td>Commit dispersion entropy, files touched, bot author flag, CI run status.</td>
+                  <td><strong>Process &amp; Provenance</strong></td>
+                  <td><code>F24-F28</code></td>
+                  <td>Commit count, files touched count, dispersion entropy, CI run status, bot author flag.</td>
                 </tr>
               </tbody>
             </table>
@@ -438,7 +438,7 @@ console.log(data);</div>
         <section id="ci-action" class="docs-section">
           <h2 class="docs-section-heading">6. GitHub Action CI/CD Risk Gate</h2>
           <p>
-            Enforce automated merge blocking in your repositories by placing the following workflow at `.github/workflows/astra-gate.yml`:
+            Enforce automated merge blocking in your repositories by placing the following workflow at <code>.github/workflows/astra-gate.yml</code>:
           </p>
 
           <div class="code-container">
@@ -496,6 +496,7 @@ jobs:
             <p class="docs-footer-subtext">
               Abstract Syntax Tree Triage for AI-Agent Pull Requests. Built with Python 3.11+, Tree-sitter C bindings, Sentence-Transformers, and Platt-calibrated XGBoost.
             </p>
+            <p class="docs-footer-credit">Designed and built by Ameya.</p>
           </div>
         </footer>
 

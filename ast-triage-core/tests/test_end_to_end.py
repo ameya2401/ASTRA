@@ -144,6 +144,7 @@ def test_analyze_test_cheat_pr(client):
     # Check that override fired or assertion deletion is listed in top risk drivers
     drivers_str = " ".join(d["feature_name"] for d in data["top_risk_drivers"])
     assert "assertions_deleted" in drivers_str or data["override_applied"] is not None
+    assert data["metrics_summary"]["assertions_deleted"] == 6
 
 
 def test_analyze_semantic_drift_pr(client):

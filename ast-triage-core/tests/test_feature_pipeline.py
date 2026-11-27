@@ -194,6 +194,18 @@ diff --git a/tests/test_logic.py b/tests/test_logic.py
     assert metrics["test_ast_nodes_added"] > 0
     assert metrics["test_to_logic_ratio"] > 0.0
 
+    # Also verify unified diffs without "diff --git" headers
+    plain_unified = """--- a/tests/test_session.py
++++ b/tests/test_session.py
+@@ -10,4 +10,1 @@
+-    assert session.active is True
+-    assert session.valid is True
++    pass
+"""
+    plain_metrics = extract_test_metrics(plain_unified)
+    assert plain_metrics["test_files_modified"] == 1
+    assert plain_metrics["assertions_deleted"] == 2
+
 
 def test_extract_process_metrics():
     # Bot detection via username
