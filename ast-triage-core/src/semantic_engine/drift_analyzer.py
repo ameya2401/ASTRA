@@ -11,6 +11,8 @@ Computes semantic alignment between issue descriptions and code diffs:
 
 Implementation: Phase 3
 """
+from __future__ import annotations
+
 import logging
 import re
 from typing import Optional, Set, Tuple, TypedDict

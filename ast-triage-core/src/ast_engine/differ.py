@@ -24,6 +24,8 @@ Usage:
     result = diff_single_file_ast(base_code, head_code)
     print(result["ast_disturbance_index"])  # 0.72
 """
+from __future__ import annotations
+
 import logging
 from typing import Any, TypedDict
 
