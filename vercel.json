@@ -10,6 +10,26 @@
     {
       "source": "/landing/(.*)",
       "destination": "/$1"
+    },
+    {
+      "source": "/docs",
+      "destination": "https://astra-08bw.onrender.com/docs"
+    },
+    {
+      "source": "/docs/(.*)",
+      "destination": "https://astra-08bw.onrender.com/docs/$1"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "https://astra-08bw.onrender.com/static/$1"
+    },
+    {
+      "source": "/openapi.json",
+      "destination": "https://astra-08bw.onrender.com/openapi.json"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://astra-08bw.onrender.com/api/$1"
     }
   ]
 }
