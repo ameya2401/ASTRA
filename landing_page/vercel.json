@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/landing",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/landing/(.*)",
