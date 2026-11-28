@@ -97,6 +97,8 @@ def calculate_dispersion_entropy(file_churns: Sequence[int]) -> float:
     Returns:
         Entropy rounded to 4 decimal places. 0.0 if total churn is 0 or 1 file touched.
     """
+    if not file_churns:
+        return 0.0
     valid_churns = [c for c in file_churns if c > 0]
     total_churn = sum(valid_churns)
     if total_churn == 0 or len(valid_churns) <= 1:
