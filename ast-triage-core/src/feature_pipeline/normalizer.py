@@ -66,32 +66,56 @@ def impute_missing_values(
     return X_clean
 
 
-def clip_feature_bounds(X: np.ndarray) -> np.ndarray:
+def clip_feature_bounds(
+    X: np.ndarray,
+    custom_bounds: Optional[Dict[int, Tuple[Optional[float], Optional[float]]]] = None,
+    track_clipped_indices: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, Dict[int, int]]]:
     """
-    Clips features to their algorithmic and physiological bounds.
+    Clips features to their algorithmic and physiological bounds with optional
+    custom boundary overrides and clipped element telemetry.
 
     Args:
         X: Input array of shape (N, 28) or (28,).
+        custom_bounds: Optional dictionary mapping feature indices to (lower, upper) bounds.
+        track_clipped_indices: If True, returns a telemetry dict counting clipped values per index.
 
     Returns:
-        Clipped array of the same shape.
+        Clipped array of the same shape, or (clipped_array, telemetry_dict) if tracking enabled.
     """
     is_1d = X.ndim == 1
     X_out = np.array(X, dtype=np.float32, copy=True)
     if is_1d:
         X_out = X_out.reshape(1, -1)
 
+    bounds_map: Dict[int, Tuple[Optional[float], Optional[float]]] = dict(FEATURE_BOUNDS)
+    if custom_bounds:
+        for idx, (c_low, c_high) in custom_bounds.items():
+            if 0 <= idx < 28:
+                bounds_map[idx] = (c_low, c_high)
+
+    telemetry: Dict[int, int] = {}
     n_features = min(X_out.shape[1], 28)
     for col_idx in range(n_features):
-        lower, upper = FEATURE_BOUNDS.get(col_idx, (None, None))
+        lower, upper = bounds_map.get(col_idx, (None, None))
+        clipped_count = 0
         if lower is not None:
+            mask_low = X_out[:, col_idx] < lower
+            if track_clipped_indices and np.any(mask_low):
+                clipped_count += int(np.sum(mask_low))
             X_out[:, col_idx] = np.maximum(X_out[:, col_idx], lower)
         if upper is not None:
+            mask_high = X_out[:, col_idx] > upper
+            if track_clipped_indices and np.any(mask_high):
+                clipped_count += int(np.sum(mask_high))
             X_out[:, col_idx] = np.minimum(X_out[:, col_idx], upper)
+        if track_clipped_indices and clipped_count > 0:
+            telemetry[col_idx] = clipped_count
 
-    if is_1d:
-        return X_out.reshape(-1)
-    return X_out
+    result_arr = X_out.reshape(-1) if is_1d else X_out
+    if track_clipped_indices:
+        return result_arr, telemetry
+    return result_arr
 
 
 class FeatureNormalizer:
